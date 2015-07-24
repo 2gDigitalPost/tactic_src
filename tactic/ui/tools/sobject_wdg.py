@@ -335,7 +335,7 @@ class SObjectDetailWdg(BaseRefreshWdg):
         values = {
                 'search_key': search_key,
                 'pipeline_code': my.pipeline_code,
-                'search_type': my.search_type,
+                'search_type': my.search_type
         }
 
         config_xml = []

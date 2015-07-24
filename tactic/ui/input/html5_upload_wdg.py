@@ -279,6 +279,12 @@ class UploadButtonWdg(BaseRefreshWdg):
         if not my.on_complete:
             my.on_complete_kwargs = {}
         my.upload_id = my.kwargs.get("upload_id")
+        my.different = False # MTM
+        if 'different' in my.kwargs.keys(): # MTM
+            my.different = True  #MTM
+        my.stupid_button = False #MTM
+        if 'stupid_button' in my.kwargs.keys(): #MTM
+            my.stupid_button = True #MTM
         super(UploadButtonWdg,my).init()
 
 
@@ -328,14 +334,25 @@ class UploadButtonWdg(BaseRefreshWdg):
 
 
 
-        from tactic.ui.widget import ActionButtonWdg
-        button = ActionButtonWdg(title=title)
-
-
-        button_id = my.kwargs.get("id")
-        if button_id:
-            button.set_id(button_id)
-        top.add(button)
+        from pyasm.web import Table, DivWdg#MTM ADDED
+        tbutton = Table()#MTM ADDED
+        tbutton.add_row()#MTM ADDED
+        t1 = tbutton.add_cell(' ')#MTM ADDED
+        t1.add_attr('width','45%%')#MTM ADDED
+        t2 = tbutton.add_cell('<input type="button" value="%s" id="%s"/>' % (title, my.kwargs.get('id')))#MTM ADDED
+        t2.add_attr('align','center')#MTM ADDED
+        t3 = tbutton.add_cell(' ')#MTM ADDED
+        t3.add_attr('width','45%%')#MTM ADDED
+        button = None#MTM ADDED
+        if not my.stupid_button:#MTM ADDED
+            from tactic.ui.widget import ActionButtonWdg#MTM ADDED
+            button = ActionButtonWdg(title=title)#MTM ADDED
+            button_id = my.kwargs.get("id")#MTM ADDED
+            if button_id:#MTM ADDED
+                button.set_id(button_id)#MTM ADDED
+        else:#MTM ADDED
+            button = tbutton#MTM ADDED
+        top.add(button)#MTM ADDED
 
         upload_init = my.kwargs.get("upload_init")
         if not upload_init:

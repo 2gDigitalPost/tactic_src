@@ -95,8 +95,7 @@ class SObjectDetailElementWdg(BaseTableElementWdg):
         var kwargs = {
             search_key: bvr.search_key,
             use_parent: bvr.use_parent,
-            tab_element_names: bvr.tab_element_names,
-
+            tab_element_names: bvr.tab_element_names
         };
 
 

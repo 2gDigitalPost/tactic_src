@@ -170,6 +170,98 @@ class SideBarPanelWdg(BaseRefreshWdg):
 
 
     def get_onload_js(my):
+        #MTM made this function
+        from tactic_client_lib import TacticServerStub
+        server = TacticServerStub.get()
+        user_name = Environment.get_user_name()
+        login_obj = server.eval("@SOBJECT(sthpw/login['login','%s'])" % user_name)
+        my_email = 'IMANEMAIL'
+        if login_obj:
+            login_obj = login_obj[0]
+            my_email = login_obj.get('email')
+        user_groups = Environment.get_group_names()
+        email_lookup = {'admin': 'mattmisenhimer@gmail.com', 'audio': 'Audio@2gdigital.com|IncomingAudio@2gdigital.com', 'billing and accounts receivable': 'Accounting@2gdigital.com', 'compression': 'Compression@2gdigital.com', 'compression supervisor': 'Compression@2gdigital.com', 'edeliveries': 'eDeliveries@2gdigital.com|EdelOperators@2gdigital.com', 'edit': 'Editors@2gdigital.com', 'edit supervisor': 'Editors@2gdigital.com', 'executives': 'chuck.fillietaz@2gdigital.com', 'it': 'TechAlert@2gdigital.com', 'machine room': 'FIXME@2gdigital.com', 'machine room supervisor': 'FIXME@2gdigital.com', 'management': 'FIXME@2gdigital.com', 'media vault': 'MediaVault@2gdigital.com', 'media vault supervisor': 'MediaVault@2gdigital.com', 'office employees': 'FIXME@2gdigital.com', 'qc': 'QC@2gdigital.com', 'qc supervisor': 'QC@2gdigital.com', 'sales': '2GSales@2gdigital.com', 'sales supervisor': '2GSales@2gdigital.com', 'scheduling': '2GScheduling@2gdigital.com', 'scheduling supervisor': '2GScheduling@2gdigital.com', 'senior_staff': 'FIXME@2gdigital.com', 'streamz': 'FIXME@2gdigital.com', 'technical services': 'TechAlert@2gdigital.com', 'vault': '2GArrivals@2gdigital.com|2GVault@2gdigital.com'}
+        ugs = ''
+        just_groups = ''
+        seen_emails = []
+        for ug in user_groups:
+            if ug not in ['client','user','default']:
+                email = email_lookup[ug]
+                if email not in seen_emails:
+                    seen_emails.append(email)
+                    if ugs == '':
+                        ugs = email
+                    else:
+                        ugs = '%s|%s' % (ugs, email) #LOOKUP EMAIL
+                if just_groups == '':
+                    just_groups = ug
+                else:
+                    just_groups = '%s,%s' % (just_groups, ug)
+        added_js = ''
+        if 'compression' in just_groups or 'qc' in just_groups or 'edeliveries' in just_groups:
+            added_js = '''
+            //This works VERY well. Just uncomment to see the magic...
+            //Need to fill in (and create) logic for other sections: Sent by Me (outbox), Inbox (sent to me), Department (all groups user belongs to) Notes Inbox 
+            //Need to make sure 'addressed_to' is working correctly (should be set for all notes, not just ones being emailed)
+            function oc(a){
+                var o = {};
+                for(var i=0;i<a.length;i++){
+                    o[a[i]]='';
+                }
+                return o;
+            }
+            function double_digits(num){
+                snum = String(num);
+                if(snum.length == 1){
+                    snum = '0' + snum;
+                }
+                return snum;
+            }
+            punkface2 = function(timelen){
+                setTimeout('status_changes()',timelen);
+            }
+            function addMinutes(date, minutes) {
+                return new Date(date.getTime() + minutes*60000);
+            }
+            status_changes = function(){
+                stat_colors = {'Assignment': '#fcaf88', 'Pending': '#d7d7d7', 'In Progress': '#f5f3a4', 'In_Progress': '#f5f3a4', 'In Production': '#f5f3a4', 'In_Production': '#f5f3a4', 'In production': '#f5f3a4', 'In_production': '#f5f3a4', 'Waiting': '#ffd97f', 'Need Assistance': '#fc88fb', 'Need_Assistance': '#fc88fb', 'Review': '#888bfc', 'Approved': '#d4b5e7', 'On Hold': '#e8b2b8', 'On_Hold': '#e8b2b8', 'Client Response': '#ddd5b8', 'Completed': '#b7e0a5', 'Ready': '#b2cee8', 'Internal Rejection': '#ff0000', 'External Rejection': '#ff0000', 'Rejected': '#ff0000', 'Failed QC': '#ff0000', 'Fix Needed': '#c466a1', 'Need Buddy Check': '#e3701a', 'DR In_Progress': '#d6e0a4', 'DR In Progress': '#d6e0a4','Amberfin01_In_Progress':'#D8F1A8', 'Amberfin01 In Progress':'#D8F1A8', 'Amberfin02_In_Progress':'#F3D291',  'Amberfin02 In Progress':'#F3D291','BATON In_Progress': '#c6e0a4', 'BATON In Progress': '#c6e0a4','Export In_Progress': '#796999', 'Export In Progress': '#796999','Buddy Check In_Progress': '#1aade3','Buddy Check In Progress': '#1aade3'};
+                rnow = new Date();
+                rnow = addMinutes(rnow, -490);
+                hour = double_digits(Number(rnow.getHours()));
+                minutes = double_digits(Number(rnow.getMinutes())); 
+                seconds = double_digits(Number(rnow.getSeconds())); 
+                timestamp = rnow.getFullYear() + '-' + double_digits((rnow.getMonth() + 1)) + '-' + double_digits(rnow.getDate()) + ' ' + hour + ':' + minutes + ':' + seconds;
+                var server = TacticServerStub.get();
+                updated_expr = "@SOBJECT(twog/status_log['timestamp','>=','" + timestamp + "']['lookup_code','~','WORK_ORDER']['@ORDER_BY','code desc'])";   
+                updated = server.eval(updated_expr);   
+                dicty = {};
+                keysos = [];
+                for(var r = 0; r < updated.length; r++){
+                    task_sk = server.build_search_key('sthpw/task', updated[r].task_code);
+                    if(!(task_sk in oc(keysos))){
+                        keysos.push(task_sk);
+                        dicty[task_sk] = updated[r].status;
+                    }
+                }
+                sels = document.getElementsByTagName('select');
+                for(var r = 0; r < sels.length; r++){
+                    if(sels[r].id.indexOf("status_") != -1){
+                        sk = sels[r].id.split('tatus_')[1];
+                        disp_status = sels[r].value;
+                        if(sk in oc(keysos)){
+                            if(disp_status != dicty[sk]){
+                                sels[r].value = dicty[sk]; 
+                                sels[r].style.backgroundColor = stat_colors[dicty[sk]];
+                                sels[r].setAttribute('old',dicty[sk]);
+                                sels[r].setAttribute('old_status',dicty[sk]);
+                            }    
+                        }
+                    }
+                }
+                punkface2(30000); //every 30 seconds -- 300000 = 5 minutes
+            }
+            punkface2(30000);
+            '''
 
         return r'''
 
@@ -1373,13 +1465,12 @@ spt.side_bar.save_definition_cbk = function( bvr )
         }
     }
 }
+%s
+''' % added_js
 
 
 
 
-
-
-        '''
 
 
 
@@ -1720,6 +1811,23 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
         menu_item.add_behavior( {
             'cbjs_action': '''
             var link = spt.smenu.get_activator(bvr);
+            var content_top = document.getElement(".spt_tab_content_top");//MTM
+            selected_tab = document.getElementsByClassName("spt_is_selected");//MTM
+            go_ahead = true;//MTM
+            selected_title = 'this page';//MTM
+            unsaved = [];//MTM
+            if(selected_tab.length > 0){//MTM
+                selected_tab = selected_tab[0];//MTM
+                selected_title = selected_tab.getAttribute("spt_title");//MTM
+                tab_content = content_top.getElementsByClassName("spt_tab_content");//MTM
+                tab_el = selected_tab;//MTM
+                for(var r = 0; r < tab_content.length; r++){//MTM
+                    if(tab_content[r].getAttribute("spt_title") == selected_title){//MTM
+                        tab_el = tab_content[r];//MTM
+                    }//MTM
+                }//MTM
+                unsaved = tab_el.getElementsByClassName("spt_row_changed");//MTM
+            } //MTM
             var main_body = $('main_body');
             var tab_top = main_body.getElement(".spt_tab_top");
             spt.tab.top = tab_top;
@@ -1731,7 +1839,12 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
 
             var element_name = link.getAttribute("spt_element_name");
             var title = link.getAttribute("spt_title");
-            spt.tab.add_new(element_name, title, class_name, kwargs);
+            if(unsaved.length > 0){//MTM
+                go_ahead = confirm("There are unsaved items on '" + selected_title + "'. Load '" + title + "' anyway?");//MTM
+            }//MTM
+            if(go_ahead){//MTM
+                spt.tab.add_new(element_name, title, class_name, kwargs);//MTM
+            }//MTM
 
             '''
         } )
@@ -1744,6 +1857,23 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
             var link = spt.smenu.get_activator(bvr);
             var main_body = $('main_body');
             var class_name = link.getAttribute("spt_class_name");
+            selected_tab = document.getElementsByClassName("spt_is_selected");//MTM
+            go_ahead = true;//MTM
+            selected_title = 'this page';//MTM
+            var content_top = document.getElement(".spt_tab_content_top");//MTM
+            unsaved = [];//MTM
+            if(selected_tab.length > 0){//MTM
+                selected_tab = selected_tab[0];//MTM
+                selected_title = selected_tab.getAttribute("spt_title");//MTM
+                tab_content = content_top.getElementsByClassName("spt_tab_content");//MTM
+                tab_el = selected_tab;//MTM
+                for(var r = 0; r < tab_content.length; r++){//MTM
+                    if(tab_content[r].getAttribute("spt_title") == selected_title){//MTM
+                        tab_el = tab_content[r];//MTM
+                    }//MTM
+                }//MTM
+                unsaved = tab_el.getElementsByClassName("spt_row_changed");//MTM
+            } //MTM
 
             var kwargs_str = link.getAttribute("spt_kwargs");
             kwargs_str = kwargs_str.replace(/&quote;/g, '"');
@@ -1752,7 +1882,12 @@ class SideBarBookmarkMenuWdg(BaseRefreshWdg):
             var element_name = link.getAttribute("spt_element_name");
             var title = link.getAttribute("spt_title");
             kwargs['title'] = title;
-            spt.panel.load_popup(title, class_name, kwargs);
+            if(unsaved.length > 0){//MTM
+                go_ahead = confirm("There are unsaved items on '" + selected_title + "'. Load '" + title + "' anyway?");//MTM
+            }//MTM
+            if(go_ahead){//MTM
+                spt.panel.load_popup(title, class_name, kwargs);//MTM
+            }//MTM
 
             '''
         } )
@@ -2599,12 +2734,14 @@ class ViewPanelWdg(BaseRefreshWdg):
 
         "filter": "filter structure",
         "width": "the default width of the table",
+        "height": "the default height of the table", #MTM MADE THIS
         "target_id": {
             'description': "The target id that this panel will be put in",
             'category': "deprecated"
         },
 
         "element_names": "Show only these elements",
+        "chunk_var": "Number to load for the client view", #MTM
 
         #"show_view_select": "determines whether the view selector is visible",
         "schema_default_view": "true if it is generated from a schema",
@@ -2664,8 +2801,6 @@ class ViewPanelWdg(BaseRefreshWdg):
             'order': '06',
             'category': 'Display'
         },
- 
-
         "show_search_limit": {
             'description': "determines whether or not to show the search limit",
             'type': 'SelectWdg',
@@ -2818,7 +2953,9 @@ class ViewPanelWdg(BaseRefreshWdg):
         search_key = my.kwargs.get('search_key')
         order_by = my.kwargs.get('order_by')
         element_name = my.kwargs.get('element_name')
+        chunk_var = my.kwargs.get('chunk_var') #MTM
 
+        my.element_names = my.kwargs.get('element_names') #MTM?
         mode = my.kwargs.get('mode')
 
 
@@ -2916,7 +3053,6 @@ class ViewPanelWdg(BaseRefreshWdg):
                 'type': 'load',
                 'cbjs_action': my.get_onload_js()
             });
-
 
 
         # add refresh information
@@ -3109,6 +3245,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         show_keyword_search = my.kwargs.get("show_keyword_search")
         show_search_limit = my.kwargs.get("show_search_limit")
         search_limit_mode = my.kwargs.get("search_limit_mode")
+        #MTM NOT IN 3_4_2015 DOWNLOAD search_limit = my.kwargs.get("search_limit") #MTM added back in
         show_layout_switcher = my.kwargs.get("show_layout_switcher")
         show_column_manager = my.kwargs.get("show_column_manager")
         show_context_menu = my.kwargs.get("show_context_menu")
@@ -3120,6 +3257,7 @@ class ViewPanelWdg(BaseRefreshWdg):
         show_gear = my.kwargs.get("show_gear")
         show_shelf = my.kwargs.get("show_shelf")
         width = my.kwargs.get("width")
+        height = my.kwargs.get("height") #MTM added height
         expression = my.kwargs.get("expression")
         do_initial_search = my.kwargs.get("do_initial_search")
         keywords = my.kwargs.get("keywords")
@@ -3130,6 +3268,9 @@ class ViewPanelWdg(BaseRefreshWdg):
         group_elements = my.kwargs.get("group_elements")
         expand_mode = my.kwargs.get("expand_mode")
         show_name_hover = my.kwargs.get("show_name_hover")
+        show_export_button = my.kwargs.get("show_export_button") #MTM
+        if show_export_button in [None,'']:
+            show_export_button = 'true'
        
 
         save_inputs = my.kwargs.get("save_inputs")
@@ -3154,6 +3295,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "order_by": order_by,
             "view": view,
             "width": width,
+            "height": height,
             "target_id": target_id,
             "schema_default_view": schema_default_view,
             "show_search": show_search,
@@ -3180,6 +3322,7 @@ class ViewPanelWdg(BaseRefreshWdg):
             "expression": expression,
             "do_search": 'false',
             "element_names":  my.element_names,
+            "chunk_var": chunk_var,
             "save_inputs": save_inputs,
             "simple_search_view": simple_search_view,
             "simple_search_mode": simple_search_mode,
@@ -3195,10 +3338,12 @@ class ViewPanelWdg(BaseRefreshWdg):
             "mode": mode,
             "keywords": keywords,
             "filter": filter,
-            "expand_mode": expand_mode
+            "expand_mode": expand_mode,
+            "show_name_hover": show_name_hover,
+            "show_export_button": show_export_button
             #"search_wdg": search_wdg
             
-        }
+        } #MTM added height, chunk_var, show_name_hover, show_export_button
         if run_search_bvr:
             kwargs['run_search_bvr'] = run_search_bvr
 
@@ -3448,6 +3593,7 @@ class ViewPanelSaveWdg(BaseRefreshWdg):
 
         }
         save_button.add_behavior(behavior)
+        #save_button.add_style("float: left") #MTM Carried over from 4.2 - might mess up alignment though
 
 
         cancel_button = ActionButtonWdg(title='Cancel')

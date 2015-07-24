@@ -31,7 +31,7 @@ import dateutil, os
 from tactic.ui.widget.button_new_wdg import ActionButtonWdg, IconButtonWdg
 
 class DiscussionElementWdg(BaseTableElementWdg):
-
+    #MTM made chronological, show_new_contexts
     ARGS_KEYS = {
 
     'process': {
@@ -83,20 +83,33 @@ class DiscussionElementWdg(BaseTableElementWdg):
         'values': 'true|false',
         'order': 6
     },
-    
+     'chronological': {
+        'description': 'True means the notes will all appear under one bar called "Notes" and will be in order of their timestamps',
+        'category' : 'Options',
+        'type' : 'SelectWdg',
+        'values' : 'true|false',
+        'order' : 7        
+    },
+     'show_new_contexts': {
+        'description': 'True means the new notes will show what context they are and how many are new, above the actionable part of the widget',
+        'category' : 'Options',
+        'type' : 'SelectWdg',
+        'values' : 'true|false',
+        'order' : 8        
+    },
     'note_expandable': {
         'description': 'Determine whether or not a note is expandable. True- shows a short version of the note that can be expanded. False- shows the full note',
         'category' : 'Options',
         'type' : 'SelectWdg',
         'values' : 'true|false',
-        'order' : 7        
+        'order' : 9        
     },
 
     'append_process': {
         'description': 'Append a list of comma separated processes in addition of the ones defined in the pipeline',
         'category' : 'Options',
         'type' : 'TextWdg',
-        'order' : 8        
+        'order' : 10        
     },
 
     'allow_email': {
@@ -104,7 +117,7 @@ class DiscussionElementWdg(BaseTableElementWdg):
         'category' : 'Options',
         'type' : 'SelectWdg',
         'values' : 'true|false',
-        'order': 9
+        'order': 11
     }
 
     }
@@ -458,9 +471,42 @@ class DiscussionWdg(BaseRefreshWdg):
         my.parent_processes = []
         my.append_processes = my.kwargs.get('append_process')
         my.allow_email = my.kwargs.get('allow_email')
-            
-
-
+        #MTM down to ...
+        my.override_processes = my.kwargs.get('override_processes')
+        my.preppend = ''#MTM
+        if 'preppend' in my.kwargs.keys():#MTM
+            my.preppend = my.kwargs.get('preppend')#MTM
+        my.search_key = ''
+        my.st = ''
+        my.try_tree = False
+        my.try_field = ''
+        my.chrono = False
+        my.chrono_name = 'Notes'
+        my.show_new_contexts = True
+        my.orig_c_new = {}
+        my.c_new = {}
+        my.context_counts = {}
+        my.context_codes = {}
+        if 'chronological' in my.kwargs.keys():
+            if my.kwargs.get('chronological') in [True,'true','True','t','1',1]:
+                my.chrono = True
+        if 'show_new_contexts' in my.kwargs.keys():
+            if my.kwargs.get('show_new_contexts') in [False,'false','False','0',0]:
+                my.show_new_contexts = False
+        my.login = ''
+        #login_obj = Environment.get_login()
+        lsear = Search("sthpw/login")
+        lsear.add_filter('login',Environment.get_user_name())
+        login_obj2 = lsear.get_sobject()
+        my.preferences = login_obj2.get_value('twog_preferences')
+        my.highlight = True
+        if 'highlight_notes=false' in my.preferences:
+            my.highlight = False
+        my.show_note_top = True
+        if 'show_note_counts=false' in my.preferences:
+            my.show_note_top = False
+        #...MTM Here
+        #Might want to delete some of the stuff above. Not all of it needs to be used
 
 
 
@@ -505,7 +551,7 @@ class DiscussionWdg(BaseRefreshWdg):
         } )
 
 
-
+        preppend = ''
         match_class = cls.get_note_class(hidden, 'spt_discussion_add')
         layout.add_relay_behavior( {
             'type': 'mouseup',
@@ -515,6 +561,7 @@ class DiscussionWdg(BaseRefreshWdg):
             'cbjs_action': '''
 
             var top = bvr.src_el.getParent(".spt_dialog_top");
+            var preppend = "%s";
             if (top == null) {
                 top = bvr.src_el.getParent(".spt_discussion_top");
             }
@@ -526,7 +573,9 @@ class DiscussionWdg(BaseRefreshWdg):
                 var kwargs = container.getAttribute("spt_kwargs");
                 kwargs = kwargs.replace(/'/g, '"');
                 kwargs = JSON.parse(kwargs);
-
+                if(preppend != '' && preppend != null){
+                    kwargs['preppend'] = preppend;
+                }
                 var layout = spt.table.get_layout();
                 var upload_id = layout.getAttribute('upload_id')
                 kwargs.upload_id = upload_id; 
@@ -556,7 +605,7 @@ class DiscussionWdg(BaseRefreshWdg):
                 }
             }
 
-            '''
+            ''' % preppend
             } )
 
 
@@ -597,7 +646,7 @@ class DiscussionWdg(BaseRefreshWdg):
         'type': 'mouseup',
         'bvr_match_class': submit_class,
         'cbjs_action': '''
-
+        var preppend = "%s";
         var note_top = bvr.src_el.getParent(".spt_add_note_top");
         var values = spt.api.get_input_values(note_top, null, false);
         if (values.note == '') {
@@ -634,6 +683,7 @@ class DiscussionWdg(BaseRefreshWdg):
             values['process'] = process;
             var context = values.add_context;
             values['context'] = context;
+            values['preppend'] = preppend;
             delete values.add_process;
             delete values.add_context;
 
@@ -652,7 +702,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
             spt.app_busy.hide();
         }
-        '''
+        ''' % preppend
         })
  
 
@@ -753,68 +803,89 @@ class DiscussionWdg(BaseRefreshWdg):
 
     def get_all_notes(my):
         ''' this is called by get_notes() in the very first get_display() since we dont have preprocess for BaseRefreshWdg'''
+        my.search_key = my.kwargs.get("search_key") #MTM to end of function
+        sob_code_s = my.search_key.split('code=')
+        sob_code = ''
+        if len(sob_code_s) > 1:
+            sob_code = sob_code_s[1]
+        my.st = my.search_key.split('?')[0]
+        my.try_tree = False
+        my.try_field = ''
+        st_lookup = {'twog/order': 'order_code', 'twog/title': 'title_code', 'twog/proj': 'proj_code', 'twog/work_order': 'work_order_code'}  
+        if 'treedown' in my.kwargs.keys():
+            if my.st in st_lookup.keys():
+                my.try_tree = True
+                my.try_field = st_lookup[my.st]
        
 
         my.notes_dict = {}
 
         # maintain index but we want to filter out deleted parents (None)
-        my.filtered_parents = [p for p in my.parents if p]
-        search = Search("sthpw/note") 
-        search.add_relationship_filters(my.filtered_parents, type='hierarchy')
-        search.add_order_by("process")
-        search.add_order_by("context")
-        search.add_order_by("timestamp desc")
-
-        if my.process:
-            search.add_filter("process", my.process)
-
-        if my.contexts:
-            search.add_filters("context", my.contexts)
-
-        notes = search.get_sobjects()
-        has_process = my.sobjects[0].has_value('process')
-        schema = Schema.get()
-
-        for note in notes:
-
-            """
-            search_type = note.get_value("search_type")
-            #search_id = note.get_value("search_id")
-            search_code = note.get_value("search_code")
-            if my.use_parent == 'true' and has_process:
-                process = note.get_value("process")
-                key = "%s|%s|%s" % (search_type, search_code, process)
-            else:
-                key = "%s|%s" % (search_type, search_code)
-            """
-
-            if my.use_parent in ['true', True] and has_process:
-                process = note.get_value("process")
-            else:
-                process = "publish"
-
-            search_type = note.get_value("search_type")
-
-            attrs = schema.get_relationship_attrs("sthpw/note", search_type)
-            attrs = schema.resolve_relationship_attrs(attrs, "sthpw/note", search_type)
-            from_col = attrs.get("from_col")
-            to_col = attrs.get("to_col")
-
-            search_code = note.get_value(from_col)
-            if search_code:
-                key = "%s|%s|%s" % (search_type, search_code, process)
-            else:
-                continue
-
-
-            notes_list = my.notes_dict.get(key)
-            if notes_list == None:
-                notes_list = []
-                my.notes_dict[key] = notes_list
-            notes_list.append(note)
-
+        notes = []
+        if not my.try_tree:
+            my.filtered_parents = [p for p in my.parents if p]
+            search = Search("sthpw/note") 
+            search.add_relationship_filters(my.filtered_parents)
+            if not my.chrono:
+                search.add_order_by("process") # MTM KILL
+                search.add_order_by("context") # MTM KILL   
+            search.add_order_by("timestamp desc")
+    
+            if my.process:
+                search.add_filter("process", my.process)
+    
+            if my.contexts:
+                search.add_filters("context", my.contexts)
+    
+            notes = search.get_sobjects()
+            has_process = my.sobjects[0].has_value('process')
+            for note in notes:
+                search_type = note.get_value("search_type")
+                search_id = note.get_value("search_id")
+                if my.use_parent == 'true' and has_process:
+                    process = note.get_value("process")
+                    key = "%s|%s|%s" % (search_type, search_id, process)
+                else:
+                    key = "%s|%s" % (search_type, search_id)
+                notes_list = my.notes_dict.get(key)
+                if notes_list == None:
+                    notes_list = []
+                    my.notes_dict[key] = notes_list
+                notes_list.append(note)
+        else:
+            #my.filtered_parents = [p for p in my.parents if p]
+            search = Search("sthpw/note") 
+            parent_codes = []
+            for p in my.parents:
+                parent_codes.append(p.get_value('code'))
+            search.add_filters(my.try_field, parent_codes)
+            if not my.chrono:
+                search.add_order_by("process") # MTM KILL
+                search.add_order_by("context") # MTM KILL
+            search.add_order_by("timestamp desc")
+    
+            if my.process:
+                search.add_filter("process", my.process)
+    
+            if my.contexts:
+                search.add_filters("context", my.contexts)
+    
+            notes = search.get_sobjects()
+            has_process = my.sobjects[0].has_value('process')
+            for note in notes:
+                search_type = note.get_value("search_type")
+                search_id = note.get_value("search_id")
+                if my.use_parent == 'true' and has_process:
+                    process = note.get_value("process")
+                    key = "%s|%s|%s" % (search_type, search_id, process)
+                else:
+                    key = "%s|%s" % (search_type, search_id)
+                find_field = note.get_value(my.try_field)
+                if find_field not in my.notes_dict.keys():
+                    my.notes_dict[find_field] = []
+                my.notes_dict[find_field].append(note)  
         from pyasm.biz import Snapshot
-        snapshots = Snapshot.get_by_sobjects(notes)
+        snapshots = Snapshot.get_by_sobjects(notes,context="publish") #MTM SPECIFIED THE CONTEXT
         my.attachments = {}
         for snapshot in snapshots:
             parent_key = snapshot.get_parent_search_key()
@@ -828,8 +899,35 @@ class DiscussionWdg(BaseRefreshWdg):
         return my.notes_dict
   
     
-           
-   
+    def make_timestamp(my):
+        #MTM
+        import datetime
+        now = datetime.datetime.now()
+        return now.strftime("%Y-%m-%d %H:%M:%S") 
+
+    def get_time_date_dict(my, str_time):
+        #MTM
+        import datetime
+        pre_split = str_time.split('.')[0]
+        first_split = pre_split.split(' ')
+        date = first_split[0]
+        time = first_split[1]
+        date_split = date.split('-')
+        dt = {}
+        dt['year'] = int(date_split[0])
+        dt['month'] = int(date_split[1])
+        dt['day'] = int(date_split[2])
+        dt['date'] = date
+        dt['time'] = time
+        time_split = time.split(':')
+        dt['hour'] = int(time_split[0])
+        dt['minute'] = int(time_split[1])
+        dt['second'] = int(time_split[2])
+        dt['big_time'] = float((dt['hour'] * 3600) + (dt['minute'] * 60) + dt['second'])
+        dt['str'] = str_time
+        dt['dt'] = datetime.datetime(dt['year'], dt['month'], dt['day'], dt['hour'], dt['minute'], dt['second'])
+        return dt
+    
     def get_notes(my):
         my.preprocess_notes()
         # this is -1 for a single sobject refresh like after an edit, which works like 0
@@ -847,22 +945,22 @@ class DiscussionWdg(BaseRefreshWdg):
 
         if not my.parent:
             key = ""
-        else:
-            search_type = my.parent.get_search_type()
-
-            from pyasm.biz import Schema
-            schema = Schema.get()
-            attrs = schema.get_relationship_attrs("sthpw/note", search_type)
-            attrs = schema.resolve_relationship_attrs(attrs, "sthpw/note", search_type)
-            from_col = attrs.get("from_col")
-            to_col = attrs.get("to_col")
-            search_code = my.parent.get_value(to_col)
-
-            #database_type = my.parent.get_database_type()
-            #if database_type == "MongoDb":
-            #    search_code = my.parent.get_id()
-            #else:
-            #    search_code = my.parent.get_code()
+#        else:
+#            search_type = my.parent.get_search_type()
+#
+#            from pyasm.biz import Schema
+#            schema = Schema.get()
+#            attrs = schema.get_relationship_attrs("sthpw/note", search_type)
+#            attrs = schema.resolve_relationship_attrs(attrs, "sthpw/note", search_type)
+#            from_col = attrs.get("from_col")
+#            to_col = attrs.get("to_col")
+#            search_code = my.parent.get_value(to_col)
+#
+#            #database_type = my.parent.get_database_type()
+#            #if database_type == "MongoDb":
+#            #    search_code = my.parent.get_id()
+#            #else:
+#            #    search_code = my.parent.get_code()
 
             if my.use_parent == 'true':
                 parent_process = my.parent_processes[idx]
@@ -872,6 +970,18 @@ class DiscussionWdg(BaseRefreshWdg):
                     key = "%s|%s|publish" % (search_type, search_code)
             else:
                 key = "%s|%s|publish" % (search_type, search_code)
+        else: #MTM Moved else down here to deal with our custom setup
+            key = "%s|%s" % (my.parent.get_search_type(), my.parent.get_id())
+        notes2 = None
+        if my.try_tree:
+            notes2 = my.notes_dict.get(my.sobject.get_value('code'))
+        notes = my.notes_dict.get(key)
+        if notes2 and notes:
+            for n2 in notes2:
+                if n2 not in notes:
+                    notes.append(n2)
+        if not notes:
+            notes = notes2
 
 
         """
@@ -907,7 +1017,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
         """
 
-        notes = my.notes_dict.get(key)
+        #notes = my.notes_dict.get(key) #MTM
         if not notes:
             notes = []
 
@@ -958,6 +1068,21 @@ class DiscussionWdg(BaseRefreshWdg):
         my._load_js = True
 
     def get_display(my):
+        import datetime
+        #MTM DOWN TO....
+        right_now = my.get_time_date_dict(my.make_timestamp())
+        login = Environment.get_user_name()
+        my.login = login
+        grp_str = ''
+        if login:
+            from pyasm.security import LoginGroup
+            groups = LoginGroup.get_group_names() #MTM Added this
+            for grp in groups: #MTM Added this
+                if grp_str == '': #MTM Added this
+                    grp_str = grp #MTM Added this
+                else: #MTM Added this
+                    grp_str = '%s|%s' % (grp_str, grp) #MTM Added this
+        #MTM .... HERE
        
         my.is_refresh = my.kwargs.get("is_refresh")
 
@@ -1036,7 +1161,6 @@ class DiscussionWdg(BaseRefreshWdg):
             my.default_contexts_open = []
 
 
-
         if my.is_refresh =='true':
             top = Widget()
         else:
@@ -1059,7 +1183,6 @@ class DiscussionWdg(BaseRefreshWdg):
                 top.add_style("overflow: auto")
                 top.add_style("max-height: %spx" % max_height)
 
-                
         notes = my.get_notes()
 
         if my.use_parent == 'true' and not notes and not my.parent:
@@ -1172,8 +1295,6 @@ class DiscussionWdg(BaseRefreshWdg):
             add_note_wdg = DivWdg()
             add_note_wdg.add_class("spt_add_note_container")
             add_note_wdg.add_attr("spt_kwargs", jsondumps(kwargs).replace('"',"'"))
-
-
             #no_notes_div.add(add_note_wdg)
             note_dialog.add(add_note_wdg)
 
@@ -1181,21 +1302,50 @@ class DiscussionWdg(BaseRefreshWdg):
             return top
 
         # calculate the number for each context
+        my.c_new = {}
+        my.orig_c_new = {}
         my.context_counts = {}
+        my.context_codes = {}
         for note in notes:
             process = note.get_value("process")
             context = note.get_value("context")
+            orig_process = process
+            orig_context = context
+            if my.chrono:
+                process = my.chrono_name
+                context = my.chrono_name
             count = my.context_counts.get(context)
             if count == None:
                 count = 1
             else:
                 count += 1 
             my.context_counts[context] = count
+            if context not in my.c_new.keys():
+                my.c_new[context] = 0
+            if context not in my.context_codes.keys():
+                my.context_codes[context] = []
+            my.context_codes[context].append(note.get_value("code"))
+#            if my.highlight:
+#                seen_by = note.get_value("seen_by")
+#                if login not in seen_by:
+#                    my.c_new[context] = my.c_new[context] + 1
+#                    if orig_context not in my.orig_c_new.keys():
+#                        my.orig_c_new[orig_context] = 0
+#                    my.orig_c_new[orig_context] = my.orig_c_new[orig_context] + 1
+            if my.show_note_top or my.highlight:
+                seen_by = note.get_value("seen_by")
+                if login not in seen_by:
+                    my.c_new[context] = my.c_new[context] + 1
+                    if orig_context not in my.orig_c_new.keys():
+                        my.orig_c_new[orig_context] = 0
+                    my.orig_c_new[orig_context] = my.orig_c_new[orig_context] + 1
 
         if my.show_context_header:
             contexts = set()
             for note in notes:
                 context = note.get_value("context")
+                if my.chrono:
+                    context = my.chrono_name
                 contexts.add(context)
             contexts_div = DivWdg()
             contexts_div.add_color("color", "color")
@@ -1260,63 +1410,116 @@ class DiscussionWdg(BaseRefreshWdg):
         note_content = None
         
         
-
-        for i, note in enumerate(notes):
+        i = 0
+        #for i, note in enumerate(notes):
+        for note in notes:
             context = note.get_value("context")
             process = note.get_value("process")
+            if my.chrono:
+                context = my.chrono_name
+                process = my.chrono_name
             if last_context == None or context != last_context:
-                # organize by context
-                context_top = DivWdg()
-                context_top.add_class("spt_discussion_context_top")
-                context_top.add_class("my_context")
-                #context_top.add_class("hand")
-                context_top.add_attr("my_context", context.encode('utf-8'))
-                top.add(context_top)
-
-                if show_context_notes or context in my.default_contexts_open:
-                    context_top.add_attr("spt_state", 'open')
-                else:
-                    context_top.add_attr("spt_state", 'closed')
-
-                context_wdg = my.get_context_wdg(process, context, show_context_notes=show_context_notes)
-                last_context = context
-                context_top.add(context_wdg)
-                context_top.add_style("min-width: 300px")
-                # prefer my.process. if not set, use context 
-                #process = my.process
-
-                # NOTE: this is fine if just adding shot level notes, but when dealing with task based notes, it
-                # may not be appropriate
-                #if not process:
-
-                #    process = context
-                
-                #add_note_wdg = DiscussionAddNoteWdg(parent=my.parent,context=my.contexts, process=process, use_parent=my.use_parent)
-                if my.contexts:
-                    context_choices = my.contexts
-                elif has_process and has_context:
-                    context_choices = [sobj.get_value('context')]
-                else:
-                    context_choices = []
-
-                process_choice = ''
-                if my.process:
-                    process_choice = my.process
-                elif has_process:
-                    process_choice = sobj.get_value('process')
-                           
+                if context != 'client' or ('scheduling' in grp_str or 'client' in grp_str):
+                    # organize by context
+                    context_top = DivWdg()
+                    context_top.add_class("spt_discussion_context_top")
+                    context_top.add_class("my_context")
+                    #context_top.add_class("hand")
+                    context_top.add_attr("my_context", context.encode('utf-8'))
+                    top.add(context_top)
+    
+                    if show_context_notes or context in my.default_contexts_open:
+                        context_top.add_attr("spt_state", 'open')
+                    else:
+                        context_top.add_attr("spt_state", 'closed')
+    
+                    context_wdg = my.get_context_wdg(process, context, show_context_notes=show_context_notes)
+                    last_context = context
+                    context_top.add(context_wdg)
+                    context_top.add_style("min-width: 300px")
+                    # prefer my.process. if not set, use context 
+                    #process = my.process
+    
+                    # NOTE: this is fine if just adding shot level notes, but when dealing with task based notes, it
+                    # may not be appropriate
+                    #if not process:
+    
+                    #    process = context
+                    
+                    #add_note_wdg = DiscussionAddNoteWdg(parent=my.parent,context=my.contexts, process=process, use_parent=my.use_parent)
+                    if my.contexts:
+                        context_choices = my.contexts
+                    elif has_process and has_context:
+                        context_choices = [sobj.get_value('context')]
+                    else:
+                        context_choices = []
+    
+                    process_choice = ''
+                    if my.process:
+                        process_choice = my.process
+                    elif has_process:
+                        process_choice = sobj.get_value('process')
 
                 context_count = 0
 
                 #if not my.contexts_checked or not my.show_context_header:
                 #    context_top.add_style('display: none')
 
+                #MTM down to....
+                context_codes = '|'.join(my.context_codes[context])
+                js_action = '''
+                    var context = '%s';
+                    var context_codes = '%s';
+                    login = '%s';
+                    var top = bvr.src_el.getParent(".spt_discussion_top");
+                    ctx_bar = top.getElementById("ctx_" + context);
+                    cb_str = ctx_bar.innerHTML;
+                    if(cb_str.indexOf('NEW') != -1){
+                        var ctx_top = top.getParent(".ctx_counter");
+                        var ctx_nums = ctx_top.getElementsByClassName('ctx_nums');
+                        for(var r = 0; r < ctx_nums.length; r++){
+                            ctx_nums[r].innerHTML = ''
+                        }  
+                        var notes = top.getElements(".spt_note");
+                        var server = TacticServerStub.get();
+                        var note_objs = server.eval("@SOBJECT(sthpw/note['code','in','" + context_codes + "'])"); 
+                        var ts = Math.round(new Date().getTime() / 1000);
+                        var updated_one = false;
+                        var codes_to_update = '';
+                        for(var r = 0; r < note_objs.length; r++){
+                            tnote = note_objs[r];
+                            seen_by = tnote.seen_by;
+                            if(seen_by.indexOf(login) == -1){
+                                //new_seen_by = seen_by + '[ ' + login + ' ,' + ts + ']';
+                                //Want to send this to UpdateNotesSeenByCmd so it will go faster
+                                //server.update(server.build_search_key('sthpw/note', tnote.code), {'seen_by': new_seen_by}); 
+                                updated_one = true;
+                                if(codes_to_update == ''){
+                                    codes_to_update = tnote.code;
+                                }else{
+                                    codes_to_update = codes_to_update + ',' + tnote.code;
+                                } 
+                            }
+                        }
+                        if(updated_one){
+                            server.execute_cmd("manual_updaters.UpdateNotesSeenByCmd", {'codes_to_update': codes_to_update, 'login': login, 'timestamp': ts});
+                            nbrs = cb_str.split(') ')[0];
+                            new_cb_str = nbrs + ")";
+                            ctx_bar.innerHTML = new_cb_str;
+                        }
+                    }
+                    ''' % (context, context_codes, login)
+                #Here....MTM
+
                
                 note_dialog = DialogWdg(display=False)
-                note_dialog.add_title("Notes for: %s" % context)
+                note_dialog.add_title(context)
                 note_dialog.add_style("overflow-y: auto")
                 context_top.add(note_dialog)
-                note_dialog.set_as_activator(context_wdg, offset={'x':0,'y':0})
+                if my.highlight:
+                    note_dialog.set_as_activator(context_wdg, offset={'x':0,'y':0}, extra_js=js_action)
+                else:
+                    note_dialog.set_as_activator(context_wdg, offset={'x':0,'y':0})
 
 
                 show_add = my.kwargs.get("show_add")
@@ -1395,11 +1598,25 @@ class DiscussionWdg(BaseRefreshWdg):
             #top.add(note_wdg)
 
             context_count += 1
-
-
-        return top
-
-
+            i = i + 1
+        #MTM DOWN
+        ctbl = Table()
+        ctbl.add_attr('class','ctx_counter')
+        if my.show_new_contexts and my.show_note_top:
+            for k in my.orig_c_new.keys():
+                val = my.orig_c_new[k]
+                if val > 0:
+                    ctbl.add_row()
+                    if my.highlight:
+                        c1 = ctbl.add_cell('''<font color="#FF0000"><i>NEW: %s (%s)</i></font>''' % (k, val))
+                    else:
+                        c1 = ctbl.add_cell('''%s (%s)''' % (k, val))
+                    c1.add_attr('class','ctx_nums')
+                    c1.add_style('font-size: 9px;')
+        ctbl.add_row()
+        ctbl.add_cell(top)  
+        #MTM to here, plus line below
+        return ctbl
 
     def get_context_wdg(my, process, context, show_context_notes=True):
         ''' this is drawn per process/context group of notes'''
@@ -1505,6 +1722,7 @@ class DiscussionWdg(BaseRefreshWdg):
 
         icon = IconWdg( "View", IconWdg.ARROWHEAD_DARK_DOWN)
         icon_div.add(icon)
+        context_codes = '|'.join(my.context_codes[context]) #MTM
 
 
 
@@ -1526,9 +1744,13 @@ class DiscussionWdg(BaseRefreshWdg):
         div.add(display_context)
 
         count_div = SpanWdg()
+        count_div.add_attr('id','ctx_%s' % context) #MTM
         div.add(count_div)
         count = my.context_counts.get(context)
-        count_div.add(" (%s)" % count)
+        new_str = '' #MTM
+        if my.c_new[context] > 0 and my.highlight: #MTM
+            new_str = '<font color="#FF000"><b>%s NEW</b></font>' % (my.c_new[context]) #MTM
+        count_div.add(" (%s) %s" % (count, new_str)) #MTM
         count_div.add_style("font-weight: normal")
         count_div.add_style("font-size: 1.0em")
         count_div.add_style("font-style: italic")
@@ -1546,6 +1768,10 @@ class DiscussionWdg(BaseRefreshWdg):
 
     def get_note_wdg(my, note, show_context_notes=True, note_hidden=False):
         context = note.get_value("context")
+        orig_context = context # MTM
+        if my.chrono: # MTM
+            context = my.chrono_name # MTM
+        note_sk = note.get_search_key() # MTM
 
         mode = "dialog"
 
@@ -1561,6 +1787,9 @@ class DiscussionWdg(BaseRefreshWdg):
         login = note.get_value("login")
         date = note.get_value("timestamp")
         context = note.get_value("context")
+        seen_by = note.get_value('seen_by') #MTM
+        if my.chrono: #MTM
+            context = my.chrono_name #MTM
 
         div.add_attr("my_context", context.encode("UTF-8"))
 
@@ -1659,7 +1888,6 @@ class DiscussionWdg(BaseRefreshWdg):
 
         if mode == "dialog":
             tbody.add_style("display", "")
-
         elif note_hidden in ['true', True] and my.note_expandable in ['true', True]:
             tbody.add_style("display: none")
         else:
@@ -1697,6 +1925,7 @@ class DiscussionWdg(BaseRefreshWdg):
                     left.add("<br/>")
                     left.add_style("font-size: 1.0em")
 
+                    #left.add("%s</br>" % login) #MTM was gone in download from 4_15
                     name = "%s %s" % (login_sobj.get_value("first_name"), login_sobj.get_value("last_name") )
                     left.add("%s</br>" % name)
                     left.add("%s</br>" % login_sobj.get_value("email"))
@@ -1710,6 +1939,27 @@ class DiscussionWdg(BaseRefreshWdg):
         right.add_style("padding: 10px 30px")
 
         context = note.get_value("context")
+        #MTM DOWN TO....
+        if my.chrono:
+            context = my.chrono_name
+        from uploader import CustomHTML5UploadButtonWdg 
+        #files_butt = CustomHTML5UploadButtonWdg(processes="note_attachment",sk=note_sk,name="Files")
+        files_butt = CustomHTML5UploadButtonWdg(processes="publish",sk=note_sk,name="Files")
+
+        if my.highlight:
+            if my.login not in seen_by:
+                orig_context = '<font color="#FF0000">%s</font>' % orig_context
+        context_div = DivWdg() #MTM - the following 5 lines were in 3.9 and were uncommented
+        context_div.add(orig_context)
+        context_div.add_style("padding: 5px")
+        context_div.add_style("font-size: 1.1em")
+        context_div.add_style("font-weight: bold")
+        cftbl = Table() # MTM - these 5 lines were uncommented in 3.9
+        cftbl.add_row()
+        cftbl.add_cell(context_div)
+        cftbl.add_cell(files_butt)
+        right.add(cftbl)
+        #MTM ...HERE
 
         right.add( WikiUtil().convert(note_value) )
 
@@ -1735,6 +1985,8 @@ class DiscussionWdg(BaseRefreshWdg):
 
         content.close_tbody()
 
+	div.add_style("word-wrap: break-word") #MTM
+	div.add_style("word-break: break-all") #MTM
         return div
 
 
@@ -1761,7 +2013,21 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         
 
     def get_display(my):
-
+        from tactic_client_lib import TacticServerStub # MTM
+        server = TacticServerStub.get() # MTM
+        login = Environment.get_user_name()
+        grp_str = ''
+        if login:
+            from pyasm.security import LoginGroup
+            groups = LoginGroup.get_group_names() #MTM Added this
+            for grp in groups: #MTM Added this
+                if grp_str == '': #MTM Added this
+                    grp_str = grp #MTM Added this
+                else: #MTM Added this
+                    grp_str = '%s|%s' % (grp_str, grp) #MTM Added this
+        preppend = ''
+        if 'preppend' in my.kwargs.keys():
+            preppend = my.kwargs.get('preppend')
         my.use_parent = my.kwargs.get("use_parent")
         parent = my.kwargs.get("parent")
         if not parent:
@@ -1770,7 +2036,34 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         elif isinstance(parent, basestring):
             search_key = parent
             parent = Search.get_by_search_key(parent)
-
+        search_type = parent.get_search_type() # MTM
+        parent_code = parent.get_code() #MTM
+        # MTM Logic that needs to be implemented: Save context as project, wo pair to the title, only if being added to a proj or wo 
+        solid_ctx = '' # MTM
+        solid_bool = False # MTM
+        wo = None # MTM
+        proj = None # MTM
+        if 'twog/work_order' in search_type:   #MTM WIP...
+            wo = server.eval("@SOBJECT(twog/work_order['code','%s'])" % parent_code)
+            if wo:
+                wo = wo[0]
+                solid_bool = True
+                proj = server.eval("@SOBJECT(twog/proj['code','%s'])" % wo.get('proj_code'))
+                if proj:
+                    proj = proj[0]
+        elif 'twog/proj' in search_type:
+            proj = server.eval("@SOBJECT(twog/proj['code','%s'])" % parent_code)
+            if proj:
+                proj = proj[0]
+                solid_bool = True
+        if solid_bool:
+            if proj and not wo:
+                solid_ctx = proj.get('process')
+            if wo and proj:
+                solid_ctx = '%s:%s' % (proj.get('process'), wo.get('process')) 
+            if wo and not proj:
+                solid_ctx = wo.get('process')
+       # MTM WIP END
 
 
 
@@ -1778,6 +2071,8 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         my.contexts = my.kwargs.get("context")
         # need the process to predict the notification to and cc
         my.process = my.kwargs.get('process')
+        my.append_contexts = my.get_option("append_context") #MTM, possibly a bad (for sure unused) 
+        my.override_processes = my.get_option("override_processes")
 
       
         content_div = my.top
@@ -1838,6 +2133,21 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
                 allowed.append(process)
         process_names = allowed
 
+        easy_st = search_type.split('?')[0] # MTM
+        context_values = ProdSetting.get_value_by_key('%s_note_contexts' % easy_st) # MTM
+        is_scheduler = False
+        if 'scheduling' in grp_str:
+            is_scheduler = True
+        if easy_st in ['twog/order','twog/work_order','twog/equipment_used']: # MTM
+            process_names = []
+            if 'client' not in grp_str: 
+                process_names = context_values.split('|')#MTM 
+            if is_scheduler or 'client' in grp_str:
+                process_names.append('client')
+        if easy_st == 'twog/title' and is_scheduler:
+            process_names.append('client')
+            
+
         if not process_names:
             content_div.add("<i>You do not have permission to add notes here.</i>")
             return content_div
@@ -1847,7 +2157,15 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         content_div.add(help_button)
         help_button.add_style("float: right")
         help_button.add_style("margin-top: -5px")
-
+        #MTM DOWN TO ..
+        if my.override_processes not in [None,'']:
+            process_names = []
+            op_s = my.override_processes.split('|')
+            for oper in op_s:
+                process_names.append(oper)
+            if my.process not in [None,'']:
+                process_names.append(my.process)
+        #MTM...HERE
         # prevent ppl from defining contexts directly when there is nothing defined for process, aka, publish
         
         if process_names == ["publish"]:
@@ -1877,6 +2195,8 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
             process_select = SelectWdg("add_process")
             process_select.add_class("spt_add_note_process")
             process_select.set_option("values", process_names)
+            if my.process not in [None,'']: #MTM carried over from 3.9
+                process_select.set_value(my.process) #MTM carried over from 3.9
             content_div.add(process_select)
 
 
@@ -1981,7 +2301,16 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
 
         mail_div = DivWdg()
         SwapDisplayWdg.create_swap_title(title, swap, mail_div)
+        #MTM DOWN TO ....
+        files_div = DivWdg()
+        files_div.add_attr('search_key',parent.get_search_key())
+        files_div.add_attr('transaction_ticket',parent.get_search_key())
+        files_div.add_attr('id','files_div')
+        files_div.add(' ')
 
+        content_div.add("<br/>")
+        content_div.add(files_div)
+        #MTM...HERE
         content_div.add("<br/>")
         content_div.add(mail_div)
         mail_div.add_class("spt_discussion_mail")
@@ -1996,7 +2325,7 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         search.add_filter("event", "insert|sthpw/note")
         notification = search.get_sobject()
         if notification:
-            handler = EmailHandler(notification, None, None, None, None)
+            handler = EmailHandler(notification, None, None, None)
             to = handler.get_mail_users("mail_to")
             cc = handler.get_mail_users("mail_cc")
             to_emails = []
@@ -2026,6 +2355,71 @@ class DiscussionAddNoteWdg(BaseRefreshWdg):
         table = Table()
         table.add_color("color", "color")
         mail_div.add(table)
+        #MTM ADDED ALL THE WAY DOWN TO .....
+        #logins = server.eval("@SOBJECT(sthpw/login)")
+        int_logins = server.eval("@SOBJECT(sthpw/login['location','internal']['license_type','user'])")
+        inhousers = SelectWdg('inhousers')
+        inhousers.append_option('--Select--','')
+
+        
+        group_internals = ProdSetting.get_value_by_key('internal_group_emails') # MTM
+        if group_internals not in [None,'']:
+            gis = group_internals.split('|')
+            for gi in gis:
+                gie = gi.split('->')
+                slbl = gie[0]
+                semail = gie[1]
+                inhousers.append_option(slbl, semail)
+
+        for logger in int_logins:
+            inhousers.append_option('%s %s' % (logger.get('first_name'), logger.get('last_name')), logger.get('email'))
+        if is_scheduler:
+            ext_logins = server.eval("@SOBJECT(sthpw/login['location','external'])")
+            externals = SelectWdg('externals')
+            externals.append_option('--Select--','')
+            for logger in ext_logins:
+                externals.append_option('%s %s' % (logger.get('first_name'), logger.get('last_name')), logger.get('email'))
+        table.add_row()
+        table.add_cell('Internal: ')
+        table.add_cell(inhousers)
+        if is_scheduler:
+            table.add_row()
+            table.add_cell('External: ')
+            table.add_cell(externals)
+        sel_behavior = {'css_class': 'sel_change', 'type': 'change', 'cbjs_action': '''        
+             try{
+                   //var top_el = spt.api.get_parent(bvr.src_el, '.spt_add_note_top');
+                   var top_el = spt.api.get_parent(bvr.src_el, '.spt_discussion_mail');
+                   inputs = top_el.getElementsByTagName('input');
+                   selval = bvr.src_el.value;
+                   if(selval != '' && selval != null){
+                           cc = '';
+                           for(var r = 0; r < inputs.length; r++){
+                               if(inputs[r].getAttribute('name') == 'mail_cc'){
+                                   cc = inputs[r];
+                               }
+                           }
+                           cc_val = cc.value;
+                           if(cc_val == '' || cc_val == null){
+                               cc.value = selval;
+                           }else{
+                               cc.value = cc_val + ';' + selval;
+                           }
+                   }
+                    
+                }
+                catch(err){
+                          spt.app_busy.hide();
+                          alert(err);
+                }
+         '''}
+        inhousers.add_behavior(sel_behavior)
+        if is_scheduler:
+            externals.add_behavior(sel_behavior)
+
+
+
+        # ...HERE. MTM
 
         # CC
         table.add_row()
@@ -2061,6 +2455,7 @@ class DiscussionAddNoteCmd(Command):
         note = my.kwargs.get("note")
         mail_cc = my.kwargs.get("mail_cc")
         mail_bcc = my.kwargs.get("mail_bcc")
+        files = my.kwargs.get("files")
         if mail_cc:
             mail_cc = mail_cc.split(',')
         else:
@@ -2071,20 +2466,32 @@ class DiscussionAddNoteCmd(Command):
             mail_bcc = []
         process = my.kwargs.get("process")
         context = my.kwargs.get("context")
+        preppend = ''
+        if 'preppend' in my.kwargs.keys():#MTM
+            preppend = my.kwargs.get('preppend')#MTM
+        if preppend not in [None,''] and 'client' not in context and 'client' not in process:#MTM
+            note = '%s\n%s' % (preppend, note)#MTM
+        elif preppend not in [None,''] and 'client_services' in context or 'client_services' in process:
+            note = '%s\n%s' % (preppend, note)#MTM
         if not context:
             context = process
 
         from pyasm.biz import Note
-        note = Note.create(sobject, note, context=context, process=process)
+        #MTM DOWN TO ...
+        if files not in [None,'',[],{}]:
+            note = '%s\nHASATTACHEDFILES:%sMTMCOUNT' % (note, len(files))
+        note = Note.create(sobject, note, context=context, process=process, addressed_to=mail_cc)
+        #MTM HERE
         subject = 'Added Note'
-        message = 'The following note has been added for [%s]:\n%s '%(sobject.get_code(), note.get_value('note'))
+        message = 'The following note has been added for [%s] under "%s":\n%s '%(sobject.get_code(), process, note.get_value('note')) #MTM added process/context part
         project_code = Project.get_project_code()
         users = []
         users.extend(mail_cc)
         users.extend(mail_bcc)
-        if len(users) > 0:
-            EmailTrigger2.add_notification(users, subject, message, project_code)
-            EmailTrigger2.send([],[],[], subject, message, cc_emails=mail_cc,bcc_emails=mail_bcc)
+        # MTM Turned these emails off. They are crappy and not formatted well.
+        #if len(users) > 0:
+        #    EmailTrigger2.add_notification(users, subject, message, project_code)
+        #    EmailTrigger2.send([],[],[], subject, message, cc_emails=mail_cc,bcc_emails=mail_bcc)
 
 
         
@@ -2097,6 +2504,7 @@ class DiscussionAddNoteCmd(Command):
 
             path = path.replace("\\", "/")
             basename = os.path.basename(path)
+            #basename = File.get_filesystem_name(basename) #changed File to Common in download from 4/15 
             basename = Common.get_filesystem_name(basename) 
             new_path = "%s/%s" % (upload_dir, basename)
             context = "publish"
@@ -2159,56 +2567,3 @@ class NoteStatusEditWdg(BaseRefreshWdg):
 
         return div
 
-
-'''
-#Testing of using the gear menu code 
-class NoteEditMenuWdg(BaseRefreshWdg):
-
-    def get_display(my):
-        from tactic.ui.container import SmartMenu, SmartMenuButtonDropdownWdg
-        menus = [ my.get_main_menu(), my.get_status_menu() ]
-
-    
-        #from tactic.ui.widget import SingleButtonWdg
-        #btn_dd = SingleButtonWdg(title='Global Options', icon=IconWdg.INFO, show_arrow=True)
-        btn = IconWdg(icon=IconWdg.INFO)
-
-
-        #btn_dd.add_behavior( { 'type': 'hover',
-        #            'mod_styles': 'background-image: url(/context/icons/common/gear_menu_btn_bkg_hilite.png); ' \
-        #                            'background-repeat: no-repeat;' } )
-        smenu_set = SmartMenu.add_smart_menu_set( btn, { 'NOTE_EDIT_MENU': menus } )
-        btn.add_class( "SPT_SMENU_CONTAINER" )
-        #SmartMenu.assign_as_local_activator( btn, "NOTE_EDIT_MENU", True )
-        btn_set = SmartMenuButtonDropdownWdg(menus=menus)
-        return btn_set
-
-
-    def get_main_menu(my):
-        return { 'menu_tag_suffix': 'MAIN', 'width': 100, 'opt_spec_list': [
-            { "type": "action", "label": "Edit",  "bvr_cb": {'cbjs_action': "alert('Edt')"} },
-            { "type": "action", "label": "Delete" },
-            { "type": "submenu", "label": "Status", "submenu_tag_suffix": "STATUS" },
-        ] }
-
-
-    def get_status_menu(my):
-        return {
-            'menu_tag_suffix': 'STATUS', 'width': 80, 'opt_spec_list': [
-
-                # { "type": "title", "label": "Edit" },
-
-                { "type": "action", "label": "New",
-                    "bvr_cb": {'cbjs_action': "alert(123)"}
-                },
-
-                { "type": "action", "label": "Read",
-                    "bvr_cb": {'cbjs_action': "alert(123)"}
-                },
-
-                { "type": "action", "label": "Old",
-                     "bvr_cb": {'cbjs_action':"alert(123)"}
-                }
-
-        ] }
-'''

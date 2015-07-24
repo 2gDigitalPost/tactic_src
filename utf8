@@ -1,0 +1,169 @@
+context/spt_js/edit_area/edit_area_loader.js:					var src = unescape( elems[i].src ); // use unescape for utf-8 encoded urls
+context/spt_js/require.js:w.head=D.parentNode;l.onError=function(b){throw b;};l.load=function(b,c,d){var i=b&&b.config||{},f;if(z)return f=i.xhtml?document.createElementNS("http://www.w3.org/1999/xhtml","html:script"):document.createElement("script"),f.type=i.scriptType||"text/javascript",f.charset="utf-8",f.async=!0,f.setAttribute("data-requirecontext",b.contextName),f.setAttribute("data-requiremodule",c),f.attachEvent&&!(f.attachEvent.toString&&0>f.attachEvent.toString().indexOf("[native code"))&&!V?(O=!0,f.attachEvent("onreadystatechange",
+context/spt_js/ckeditor/samples/index.html:	<meta charset="utf-8">
+context/spt_js/ckeditor/samples/appendto.html:	<meta charset="utf-8">
+context/spt_js/ckeditor/samples/xhtmlstyle.html:	<meta charset="utf-8">
+context/spt_js/ckeditor/samples/inlineall.html:	<meta charset="utf-8">
+context/spt_js/ckeditor/samples/uicolor.html:	<meta charset="utf-8">
+context/spt_js/ckeditor/samples/datafiltering.html:	<meta charset="utf-8">
+context/spt_js/ckeditor/samples/assets/posteddata.php:	<meta charset="utf-8">
+context/spt_js/ckeditor/samples/jquery.html:	<meta charset="utf-8">
+context/spt_js/ckeditor/samples/tabindex.html:	<meta charset="utf-8">
+context/spt_js/ckeditor/samples/inlinetextarea.html:	<meta charset="utf-8">
+context/spt_js/ckeditor/samples/replacebyclass.html:	<meta charset="utf-8">
+context/spt_js/ckeditor/samples/plugins/toolbar/toolbar.html:	<meta charset="utf-8">
+context/spt_js/ckeditor/samples/plugins/magicline/magicline.html:	<meta charset="utf-8">
+context/spt_js/ckeditor/samples/plugins/enterkey/enterkey.html:	<meta charset="utf-8">
+context/spt_js/ckeditor/samples/plugins/dialog/dialog.html:	<meta charset="utf-8">
+context/spt_js/ckeditor/samples/plugins/htmlwriter/outputforflash.html:	<meta charset="utf-8">
+context/spt_js/ckeditor/samples/plugins/htmlwriter/outputhtml.html:	<meta charset="utf-8">
+context/spt_js/ckeditor/samples/plugins/wysiwygarea/fullpage.html:	<meta charset="utf-8">
+context/spt_js/ckeditor/samples/api.html:	<meta charset="utf-8">
+context/spt_js/ckeditor/samples/inlinebycode.html:	<meta charset="utf-8">
+context/spt_js/ckeditor/samples/ajax.html:	<meta charset="utf-8">
+context/spt_js/ckeditor/samples/replacebycode.html:	<meta charset="utf-8">
+context/spt_js/ckeditor/samples/readonly.html:	<meta charset="utf-8">
+context/spt_js/ckeditor/samples/divreplace.html:	<meta charset="utf-8">
+context/spt_js/ckeditor/samples/uilanguages.html:	<meta charset="utf-8">
+context/spt_js/ckeditor/plugins/wsc/dialogs/tmpFrameset.html:	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+context/spt_js/ckeditor/plugins/wsc/dialogs/ciframe.html:	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+context/javascript/DynamicLoader.js:            http_request.overrideMimeType('text/xml; charset=utf-8')
+context/javascript/DynamicLoader.js:    //http_request.setRequestHeader('Content-Type','application/x-www-form-urlencoded;charset=utf-8')
+context/client/checkin.py:        file.write( doc.toprettyxml(encoding='utf-8'))
+contrib/script/quicktime_sequence_script/quicktime_sequence_script.txt:    smil.push( "<?xml version='1.0' encoding='utf-8'?>" );
+java/client_api/delegator.py:    kwargs[key.encode('utf-8')] = value
+mako/_ast_util.py:# -*- coding: utf-8 -*-
+mako/lexer.py:            parsed_encoding = 'utf-8'
+mako/lexer.py:            m = self._coding_re.match(text.decode('utf-8', 'ignore'))
+mako/lexer.py:            if m is not None and m.group(1) != 'utf-8':
+mako/lexer.py:                                "Found utf-8 BOM in file, with conflicting "
+mako/lexer.py:                                text.decode('utf-8', 'ignore'), 
+mako/lexer.py:            m = self._coding_re.match(text.decode('utf-8', 'ignore'))
+mako/lexer.py:                                text.decode('utf-8', 'ignore'), 
+pyasm/search/sql.py:                wrong_query = query.encode('utf-8')
+pyasm/search/sql.py:                wrong_query = unicode(query, errors='ignore').encode('utf-8')
+pyasm/search/sql.py:                    wrong_query = query.encode('utf-8')
+pyasm/search/sql.py:                    wrong_query = unicode(query, errors='ignore').encode('utf-8')
+pyasm/search/sql.py:                    x = x.decode('utf-8')
+pyasm/search/sql.py:                #x = unicode(x, encoding='utf-8')
+pyasm/search/search.py:            print "WARNING query: (%s) sobjects found: %s" % (len(results), statement.encode('utf-8','ignore'))
+pyasm/search/search.py:                    value = value.decode('utf-8', 'ignore')
+pyasm/search/search.py:                    from_data = unicode(from_data, errors='ignore').encode('utf-8')
+pyasm/search/search.py:                    to_data = unicode(to_data, errors='ignore').encode('utf-8')
+Binary file pyasm/search/sql.pyc matches
+Binary file pyasm/search/transaction.pyc matches
+pyasm/search/sql_dumper.py:            #f = codecs.open(path, 'a', 'utf-8')
+Binary file pyasm/search/search.pyc matches
+pyasm/search/database_impl.py:            value = unicode(description[0], 'utf-8')
+pyasm/search/transaction.py:                prev = prev.encode('utf-8')
+pyasm/search/transaction.py:                dst_dir = dst_dir.encode('utf-8')
+pyasm/search/transaction.py:            link_file = codecs.open(link_path, "w", "utf-8")
+pyasm/search/transaction.py:                value = unicode(value, errors='ignore').encode('utf-8')
+pyasm/search/transaction.py:                        print "Error: ", e.args[0].encode('utf-8','ignore')
+pyasm/search/transaction.py:                        link_file = codecs.open(link_path, "w", "utf-8")
+pyasm/search/transaction.py:                 f = codecs.open(schema_path, 'r', 'utf-8')
+pyasm/search/transaction.py:                 f = codecs.open(schema_path, 'r', 'utf-8')
+Binary file pyasm/search/database_impl.pyc matches
+Binary file pyasm/biz/expression.pyc matches
+pyasm/biz/expression.py:            new_value = "'%s'" % unicode(value).encode('utf-8', 'ignore')
+pyasm/biz/expression.py:            my.stack = [ x.decode('utf-8') if type(x)==types.StringType else x for x in my.stack]
+pyasm/biz/expression_test.py:            desc = u'Task 3 \xe2\x80\x9cHELLO"'.encode('utf-8')
+pyasm/biz/expression_test.py:        desc = u'Task 3 \xe2\x80\x9cHELLO"'.encode('utf-8')
+pyasm/biz/expression_test.py:        actual_desc = actual_desc.encode('utf-8')
+Binary file pyasm/biz/csv_import.pyc matches
+Binary file pyasm/biz/file.pyc matches
+pyasm/biz/csv_import.py:    def unicode_csv_reader(my, unicode_csv_data, dialect=csv.excel, encoder='utf-8', **kwargs):
+pyasm/biz/csv_import.py:        def utf_8_encoder(unicode_csv_data, encoder='utf-8'):
+pyasm/biz/csv_import.py:            # use this only if the file has been encoded in utf-8            
+pyasm/biz/csv_import.py:    parser.set_encoder('utf-8')
+pyasm/biz/file.py:            path = path.encode('utf-8')
+pyasm/biz/file.py:                my.file_path = my.file_path.encode('utf-8')
+pyasm/biz/file.py:            large_path = large_path.encode('utf-8')
+pyasm/biz/file.py:            small_path = small_path.encode('utf-8')
+pyasm/command/email_handler.py:        msg.append(note.get_value('note').encode('utf-8'))
+pyasm/command/email_handler.py:        msg.append(movement.get_value('description').encode('utf-8'))
+pyasm/command/command_test.py:        note = u'\xe2\x80\x9cHELLO"'.encode('utf-8')
+pyasm/command/email_trigger.py:            message = message.encode('utf-8')
+pyasm/command/email_trigger.py:            subject = subject.encode('utf-8')
+pyasm/command/email_trigger.py:            charset = 'utf-8'
+pyasm/command/email_trigger.py:            message = message.encode('utf-8')
+pyasm/command/email_trigger.py:            subject = subject.encode('utf-8')
+pyasm/command/email_trigger.py:            charset = 'utf-8'
+pyasm/command/email_trigger.py:            charset = 'utf-8'
+pyasm/command/command.py:                        error = e.message.encode('utf-8')
+pyasm/command/command.py:                        error = unicode(e.message, errors='ignore').encode('utf-8')
+pyasm/command/command.py:                    error_msg = message.encode('utf-8')
+pyasm/command/command.py:                    error_msg = unicode(message, errors='ignore').encode('utf-8')
+pyasm/command/command.py:                    error_msg = message.encode('utf-8')
+pyasm/command/command.py:                    error_msg = unicode(message, errors='ignore').encode('utf-8')
+pyasm/command/csv_import_cmd.py:        # either unknown or utf-8
+pyasm/command/csv_import_cmd.py:        # either unknown or utf-8
+Binary file pyasm/command/command.pyc matches
+Binary file pyasm/command/email_handler.pyc matches
+Binary file pyasm/command/email_trigger.pyc matches
+pyasm/prod/service/api_xmlrpc.py:                    error_msg = message.encode('utf-8')
+pyasm/prod/service/api_xmlrpc.py:                    error_msg = unicode(message, errors='ignore').encode('utf-8')
+pyasm/prod/service/api_xmlrpc.py:                            value.encode("utf-8")
+pyasm/prod/service/api_xmlrpc.py:                            print "WARNING: Value [%s] can't be encoded in utf-8" % value
+pyasm/prod/service/api_xmlrpc.py:                    return ret_results.encode('utf-8')
+pyasm/prod/service/api_xmlrpc.py:                    return unicode(ret_results, errors='ignore').encode('utf-8')
+pyasm/prod/service/api_xmlrpc.py:                    return results.encode('utf-8')
+pyasm/prod/service/api_xmlrpc.py:                    return unicode(results, errors='ignore').encode('utf-8')
+pyasm/common/xml_wrapper.py:            xml_string = xml_string.encode('utf-8')
+pyasm/common/xml_wrapper.py:            # convert to utf-8
+pyasm/common/xml_wrapper.py:                xml_string = xml_string.encode("utf-8")
+pyasm/common/xml_wrapper.py:        value = unicode( xml.getvalue(), 'utf-8')
+Binary file pyasm/common/common.pyc matches
+pyasm/common/config.py:            value = unicode(value, errors='ignore').encode('utf-8')
+Binary file pyasm/common/config.pyc matches
+Binary file pyasm/common/lxml_wrapper.pyc matches
+pyasm/common/lxml_wrapper.py:        value = etree.tostring(output, pretty_print=pretty, encoding='utf-8', method=method, xml_declaration=xml_declaration)
+pyasm/common/lxml_wrapper.py:        value = unicode( value, 'utf-8')
+pyasm/common/lxml_wrapper.py:    def parse_html(html, encoding='utf-8'):
+pyasm/common/common.py:            return in_string.encode('utf-8')
+pyasm/web/html_wdg.py:            my.attrs[name] = value.encode('utf-8')
+pyasm/web/webware_adapter.py:                values = values.decode('utf-8')
+pyasm/web/webware_adapter.py:                        value = my._process_unicode(value.decode('utf-8'))
+Binary file pyasm/web/html_wdg.pyc matches
+pyasm/web/cherrypy30_startup.py:                'tools.encode.encoding': 'utf-8',
+pyasm/web/cherrypy30_startup.py:                'tools.decode.encoding': 'utf-8',
+pyasm/web/cherrypy30_startup.py:                settings['tools.xmlrpc.encoding'] = 'utf-8'
+pyasm/checkin/metadata.py:                   value = value.encode('utf-8', 'ignore')
+pyasm/checkin/metadata.py:                   value = unicode(value, errors='ignore').encode('utf-8')
+tactic/ui/input/text_input_wdg.py:                    display = unicode(display, errors='ignore').encode('utf-8')
+tactic/ui/tools/ingestion_wdg.py:                f = codecs.open(scan_path, 'r', 'utf-8')
+tactic/ui/table/expression_element_wdg.py:                    res = unicode(res).encode('utf-8','ignore')
+tactic/ui/app/help_wdg.py:                    tmp_line = line.decode('utf-8','ignore')
+tactic/ui/filter/filter_element_wdg.py:            value = value.encode('utf-8','ignore')
+tactic/ui/filter/filter_element_wdg.py:            value = unicode(value, errors='ignore').encode('utf-8')
+tactic/ui/panel/layout_wdg.py:                        print 'WARNING: problem when getting widget value for color mapping on widget [%s]: ' % widget, "message=[%s]" % e.message.encode('utf-8')
+tactic/ui/panel/custom_layout_wdg.py:             my.encoding = 'utf-8'
+tactic/ui/panel/custom_layout_wdg.py:                    text = text.encode('utf-8')
+tactic/ui/panel/custom_layout_wdg.py:        #html = html.decode('utf-8')
+tactic/ui/panel/table_layout_wdg.py:                        group_value = group_value.encode('utf-8')
+tactic/ui/panel/table_layout_wdg.py:                        group_value = group_value.encode('utf-8')
+tactic/ui/panel/table_layout_wdg.py:            print 'WARNING: problem when getting widget value for color mapping on widget [%s]: ' % widget, "message=[%s]" % e.message.encode('utf-8')
+tactic/ui/widget/regular_discussion:                sk = sk.encode('utf-8')
+tactic/ui/widget/regular_discussion:                    context_top.add_attr("my_context", context.encode('utf-8'))
+tactic/ui/widget/regular_discussion:                        sk = sk.encode('utf-8')
+tactic/ui/widget/discussion_wdg.bak:                sk = sk.encode('utf-8')
+tactic/ui/widget/discussion_wdg.bak:                    context_top.add_attr("my_context", context.encode('utf-8'))
+tactic/ui/widget/discussion_wdg.bak:                        sk = sk.encode('utf-8')
+tactic/ui/widget/discussion_wdg.bak:                    context_top.add_attr("my_context", context.encode('utf-8'))
+tactic/ui/widget/discussion_wdg.py:                sk = sk.encode('utf-8')
+tactic/ui/widget/discussion_wdg.py:                    context_top.add_attr("my_context", context.encode('utf-8'))
+tactic/ui/widget/discussion_wdg.py:                        sk = sk.encode('utf-8')
+tactic/ui/widget/data_export_wdg.py:        select_wdg.set_option('values', ['','utf-8', 'iso_8859-1']) 
+tactic/ui/widget/cv_discussion:                    context_top.add_attr("my_context", context.encode('utf-8'))
+tactic/command/create_project_cmd.py:                project_code = project_code.encode('utf-8')
+tactic/command/create_project_cmd.py:                project_code = unicode(project_code).encode('utf-8')
+tactic/command/global_search_trigger.py:            path = path.encode('utf-8')
+tactic/command/global_search_trigger.py:            path = unicode(path, errors='ignore').encode('utf-8')
+tactic/command/plugin.py:            f = codecs.open(path, fmode, 'utf-8')
+tactic/command/plugin.py:        f = codecs.open(path, fmode, 'utf-8')
+tactic/command/plugin.py:        #f = codecs.open(path, 'r', 'utf-8')
+tactic/command/run_transaction_cmd.py:            transaction_data = transaction_data.encode('utf-8')
+tactic/command/run_transaction_cmd.py:        f = codecs.open(manifest_path, 'r', 'utf-8')
+tactic/command/python_cmd.py:        #template = Template(code, output_encoding='utf-8', input_encoding='utf-8')
+tactic/command/ingestion_cmd.py:            f = codecs.open(scan_path, 'r', 'utf-8')
+tactic/command/ingestion_cmd.py:        f = codecs.open(scan_path, 'w', 'utf-8')

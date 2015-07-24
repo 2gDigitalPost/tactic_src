@@ -1,0 +1,12 @@
+tactic/ui/container/tab_wdg.py:        unsaved = tab_el.getElementsByClassName("spt_row_changed");//MTM
+tactic/ui/container/tab_wdg.py:            unsaved = tab_el.getElementsByClassName("spt_row_changed");//MTM
+tactic/ui/container/tab_wdg.py:            unsaved = tab_el.getElementsByClassName("spt_row_changed");//MTM
+tactic/ui/app/search_limit_wdg.py:                unsaved = tab_el.getElementsByClassName("spt_row_changed");
+tactic/ui/panel/panel_wdg.py:                unsaved = tab_el.getElementsByClassName("spt_row_changed");//MTM
+tactic/ui/panel/panel_wdg.py:                unsaved = tab_el.getElementsByClassName("spt_row_changed");//MTM
+tactic/ui/panel/table_layout_wdg.py:                        tr.add_class("spt_row_changed")
+tactic/ui/panel/table_layout_wdg.py:        spt.add_class(row, "spt_row_changed");
+tactic/ui/panel/table_layout_wdg.py:        rows[i].removeClass("spt_row_changed");
+tactic/ui/panel/table_layout_wdg.py:    var rows = table.getElements(css + ".spt_row_changed");
+tactic/ui/panel/table_layout_wdg.py:            row.removeClass("spt_row_changed");
+tactic/ui/panel/table_layout_wdg.py:            row.addClass("spt_row_changed");

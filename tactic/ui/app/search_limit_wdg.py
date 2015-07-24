@@ -621,19 +621,48 @@ class SearchLimitSimpleWdg(BaseRefreshWdg):
             var page_el = top.getElement(".spt_page");
 
             var value = bvr.src_el.getAttribute("spt_page");
-            if (value == 'next') {
-                value = bvr.current_page + 1;
-                if ( value < 1 ) value = 1;
+            //MTM DOWN
+            var loader_str = '';
+            if(value == 'next' || value == 'prev'){
+                loader_str = value + ' page';
+            }else{
+                loader_str = 'page ' + value;
             }
-            else if (value == 'prev') {
-                value = bvr.current_page - 1;
-                if ( value > bvr.num_pages ) value = bvr.num_pages;
+            selected_tab = document.getElementsByClassName("spt_is_selected");
+            go_ahead = true;
+            selected_title = 'this page';
+            var content_top = document.getElement(".spt_tab_content_top");
+            unsaved = [];
+            if(selected_tab.length > 0){
+                selected_tab = selected_tab[0];
+                selected_title = selected_tab.getAttribute("spt_title");
+                tab_content = content_top.getElementsByClassName("spt_tab_content");
+                tab_el = selected_tab;
+                for(var r = 0; r < tab_content.length; r++){
+                    if(tab_content[r].getAttribute("spt_title") == selected_title){
+                        tab_el = tab_content[r];
+                    }
+                }
+                unsaved = tab_el.getElementsByClassName("spt_row_changed");
             }
-            page_el.value = value;
-
-            bvr.src_el = bvr.src_el.getParent('.spt_table_top');
-            //bvr.panel = bvr.src_el.getParent('.spt_view_panel');
-            spt.dg_table.search_cbk(evt, bvr);
+            if(unsaved.length > 0){
+                go_ahead = confirm("There are unsaved items on '" + selected_title + "'. Load " + loader_str + " anyway?");
+            }
+            if(go_ahead){
+                if (value == 'next') {
+                    value = bvr.current_page + 1;
+                    if ( value < 1 ) value = 1;
+                }
+                else if (value == 'prev') {
+                    value = bvr.current_page - 1;
+                    if ( value > bvr.num_pages ) value = bvr.num_pages;
+                }
+                page_el.value = value;
+    
+                bvr.src_el = bvr.src_el.getParent('.spt_table_top');
+                //bvr.panel = bvr.src_el.getParent('.spt_view_panel');
+                spt.dg_table.search_cbk(evt, bvr);
+            }
             '''
         } )
 

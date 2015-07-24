@@ -237,6 +237,8 @@ class Command(Base):
             # go through the command pipeline
             cmd.preprocess()
             cmd.get_data()
+            #print "CMD = %s" % cmd                       # MTM TO SEE WITH, TURN ON
+            #print "CMD.get_data() = %s" % cmd.get_data() # MTM TO SEE WITH, TURN ON
             cmd.execute()
             cmd.postprocess()
 
@@ -263,7 +265,6 @@ class Command(Base):
             # if this is not the top command keep going up
             if cmd != top_cmd_seq[0]:
                 raise
-       
             # fail with controlled error
             message = e.message
            

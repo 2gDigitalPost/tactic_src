@@ -58,9 +58,11 @@ class Palette(object):
     'color':        '#000',         # main font color
     'color2':       '#333',         # secondary font color
     'color3':       '#333',         # tertiary font color
+    'color4':       '#FFFFFF',         # tertiary font color
     'background':   '#FFFFFF',      # main background color
     'background2':  '#BBBBBB',      # secondary background color
     'background3':  '#D1D7E2',      # tertiary background color
+    'background_top':  '#000000',      # tertiary background color
     'border':       '#AAA',       # main border color
 
     'side_bar_title': '#3C76C2',
@@ -82,6 +84,7 @@ class Palette(object):
     'background':   '#DDDDDD',      # main background color
     'background2':  '#777777',      # secondary background color
     'background3':  '#999999',      # tertiary background color
+    'background_top':  '#000000',      # tertiary background color
     'border':       '#888888',         # main border color
     'table_border': '#DDD',
     'theme':        'default',
@@ -150,6 +153,20 @@ class Palette(object):
     'theme': 'default'
     }
 
+    CUSTOM2G = {
+    'color':        '#000',         # main font color
+    'color2':       '#FFFFFF',         # secondary font color
+    'color3':       '#333',         # tertiary font color
+    'background':   '#FFFFFF',      # main background color
+    'background2':  '#BBBBBB',      # secondary background color
+    'background3':  '#D1D7E2',      # tertiary background color
+    'background_top':  '#000000',      # tertiary background color
+    'border':       '#AAA',       # main border color
+    'side_bar_title': '#3C76C2',
+    'side_bar_title_color': '#FFF',
+    'tab_background': '#3C76C2',
+    'table_border': '#FFF',
+    }
 
 
     AVIATOR = {
@@ -169,9 +186,9 @@ class Palette(object):
 
 
     #COLORS = DEFAULT
-    #COLORS = SILVER
+    COLORS = SILVER
     #COLORS = ORIGAMI
-    COLORS = AQUA
+    #COLORS = AQUA
     #COLORS = BRIGHT
     #COLORS = BON_NOCHE
     #COLORS = MMS

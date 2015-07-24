@@ -154,7 +154,7 @@ class DialogWdg(BaseRefreshWdg):
         else:
             my.content_wdg.add(widget, name)
 
-    def set_as_activator(my, widget, offset=None):
+    def set_as_activator(my, widget, offset=None, extra_js=''): #MTM added extra_js
 
         if isinstance(widget, BaseRefreshWdg):
             try:
@@ -213,7 +213,8 @@ class DialogWdg(BaseRefreshWdg):
             }
             bvr.src_el.dialog = dialog;
             spt.body.add_focus_element(dialog);
-        '''
+            %s
+        ''' % extra_js
         } )
 
 

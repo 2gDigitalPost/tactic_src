@@ -483,40 +483,95 @@ spt.tab.select = function(element_name) {
 
 
     var content_top = top.getElement(".spt_tab_content_top");
-    var content_boxes = spt.tab.get_contents();
-
-    for (var i=0; i < content_boxes.length; i++) {
-        var content_box = content_boxes[i];
-        content_box.setStyle("display", "none");
-    }
-
-    for (var i=0; i < content_boxes.length; i++) {
-        var content_box = content_boxes[i];
-        var box_name = content_box.getAttribute("spt_element_name")
-        if (box_name == element_name) {
-            content_box.setStyle("display", "");
-            if (!content_box.hasClass("spt_content_loaded")) {
-                spt.tab.load_class(header);
-            }
-            break;
+    selected_tab = document.getElementsByClassName("spt_is_selected");//MTM
+    go_ahead = true;//MTM
+    if(selected_tab.length > 0){//MTM
+        selected_tab = selected_tab[0];//MTM
+        selected_title = selected_tab.getAttribute("spt_title");//MTM
+        tab_content = content_top.getElementsByClassName("spt_tab_content");//MTM
+        tab_el = selected_tab;//MTM
+        for(var r = 0; r < tab_content.length; r++){//MTM
+            if(tab_content[r].getAttribute("spt_title") == selected_title){//MTM
+                tab_el = tab_content[r];//MTM
+            }//MTM
+        }//MTM
+        unsaved = tab_el.getElementsByClassName("spt_row_changed");//MTM
+        if(unsaved.length > 0){//MTM
+            go_ahead = confirm("There are unsaved items on '" + selected_title + "'. Switch tabs anyway?");//MTM
+        }//MTM
+    } //MTM
+    if(go_ahead){//MTM
+        var content_boxes = spt.tab.get_contents();
+    
+        for (var i=0; i < content_boxes.length; i++) {
+            var content_box = content_boxes[i];
+            content_box.setStyle("display", "none");
         }
-    }
-
-
-    var kwargs_str = header.getAttribute("spt_kwargs");
-    if (kwargs_str == '') {
-        kwargs = {};
-    }
-    else {
-        kwargs_str = kwargs_str.replace(/&quote;/g, '"');
-        kwargs = JSON.parse(kwargs_str);
-    }
-
-    bvr.options = {
-      element_name: element_name,
-      alias: kwargs.help_alias
-    }
-    spt.named_events.fire_event("tab|select", bvr);
+    
+        for (var i=0; i < content_boxes.length; i++) {
+            var content_box = content_boxes[i];
+            var box_name = content_box.getAttribute("spt_element_name")
+            if (box_name == element_name) {
+                content_box.setStyle("display", "");
+                if (!content_box.hasClass("spt_content_loaded")) {
+                    spt.tab.load_class(header);
+                }
+                break;
+            }
+        }
+    
+    
+        var kwargs_str = header.getAttribute("spt_kwargs");
+        if (kwargs_str == '') {
+            kwargs = {};
+        }
+        else {
+            kwargs_str = kwargs_str.replace(/&quote;/g, '"');
+            kwargs = JSON.parse(kwargs_str);
+        }
+    
+        bvr.options = {
+          element_name: element_name,
+          alias: kwargs.help_alias
+        }
+        spt.named_events.fire_event("tab|select", bvr);
+        
+        // usually a tab contains a table and layout. its better to set to that.
+        var tab_content = top.getElement('.spt_tab_content[spt_element_name=' + element_name + ']');
+        if (tab_content) {
+            var table = tab_content.getElement('.spt_table_table');
+            if (table) {
+                var layout = table.getParent(".spt_layout");
+                spt.table.set_layout(layout);
+            }
+            //break;
+        }
+    
+    
+        var kwargs_str = header.getAttribute("spt_kwargs");
+        if (kwargs_str == '') {
+            kwargs = {};
+        }
+        else {
+            kwargs_str = kwargs_str.replace(/&quote;/g, '"');
+            kwargs = JSON.parse(kwargs_str);
+        }
+    
+        bvr.options = {
+          element_name: element_name,
+          alias: kwargs.help_alias
+        }
+        spt.named_events.fire_event("tab|select", bvr);
+        
+        // usually a tab contains a table and layout. its better to set to that.
+        var tab_content = top.getElement('.spt_tab_content[spt_element_name=' + element_name + ']');
+        if (tab_content) {
+            var table = tab_content.getElement('.spt_table_table');
+            if (table) {
+                var layout = table.getParent(".spt_layout");
+                spt.table.set_layout(layout);
+            }
+        }
     
     // usually a tab contains a table and layout. it's better to set to that.
     var tab_content = top.getElement('.spt_tab_content[spt_element_name=' + element_name + ']');
@@ -528,10 +583,10 @@ spt.tab.select = function(element_name) {
         }
     }
 
-
-    var last_element_name = spt.tab.get_selected_element_name();
-    if (last_element_name) {
-        top.setAttribute("spt_last_element_name", last_element_name);
+        var last_element_name = spt.tab.get_selected_element_name();
+        if (last_element_name) {
+            top.setAttribute("spt_last_element_name", last_element_name);
+        }
     }
 
 
@@ -1323,8 +1378,30 @@ spt.tab.close = function(src_el) {
         icon.add_behavior( {
         'type': 'click_up',
         'cbjs_action': '''
-        spt.tab.top = bvr.src_el.getParent(".spt_tab_top");
-        spt.tab.add_new();
+        selected_tab = document.getElementsByClassName("spt_is_selected");//MTM
+        go_ahead = true;//MTM
+        selected_title = 'this page';//MTM
+        var content_top = document.getElement(".spt_tab_content_top");//MTM
+        unsaved = [];//MTM
+        if(selected_tab.length > 0){//MTM
+            selected_tab = selected_tab[0];//MTM
+            selected_title = selected_tab.getAttribute("spt_title");//MTM
+            tab_content = content_top.getElementsByClassName("spt_tab_content");//MTM
+            tab_el = selected_tab;//MTM
+            for(var r = 0; r < tab_content.length; r++){//MTM
+                if(tab_content[r].getAttribute("spt_title") == selected_title){//MTM
+                    tab_el = tab_content[r];//MTM
+                }//MTM
+            }//MTM
+            unsaved = tab_el.getElementsByClassName("spt_row_changed");//MTM
+        } //MTM
+        if(unsaved.length > 0){//MTM
+            go_ahead = confirm("There are unsaved items on '" + selected_title + "'. Load a blank tab anyway?");//MTM
+        }//MTM
+        if(go_ahead){//MTM
+            spt.tab.top = bvr.src_el.getParent(".spt_tab_top");//MTM
+            spt.tab.add_new();//MTM
+        }//MTM
         '''
         } )
 
@@ -1734,6 +1811,9 @@ spt.tab.close = function(src_el) {
 
 
         header.add_attr("spt_element_name", element_name)
+        #MTM CHEAP LAZY HACK
+        if title == 'Index':
+            title = "Welcome! Here's What's New"
         header.add_attr("spt_title", title)
 
         if not is_template:
@@ -1833,7 +1913,32 @@ spt.tab.close = function(src_el) {
         remove_wdg.add_behavior( {
         'type': 'click_up',
         'cbjs_action': '''
-            spt.tab.close(bvr.src_el); 
+            //MTM made this//MTM
+            spt.tab.top = bvr.src_el.getParent(".spt_tab_top");//MTM
+            var top = spt.tab.top;//MTM
+            var headers = spt.tab.get_headers();//MTM
+            if (headers.length == 1) {//MTM
+                return;//MTM
+            }//MTM
+//MTM
+            var header = bvr.src_el.getParent(".spt_tab_header");//MTM
+            selected_title = header.getAttribute("spt_title");//MTM
+            var content_top = document.getElement(".spt_tab_content_top");//MTM
+            tab_content = content_top.getElementsByClassName("spt_tab_content");//MTM
+            tab_el = header; //MTM
+            for(var r = 0; r < tab_content.length; r++){//MTM
+                if(tab_content[r].getAttribute("spt_title") == selected_title){//MTM
+                    tab_el = tab_content[r];//MTM
+                }//MTM
+            }//MTM
+            unsaved = tab_el.getElementsByClassName("spt_row_changed");//MTM
+            go_ahead = true;//MTM
+            if(unsaved.length > 0){//MTM
+                go_ahead = confirm("There are unsaved items on '" + selected_title + "'. Close '" + selected_title + "' anyway?");//MTM
+            }//MTM
+            if(go_ahead){//MTM
+                spt.tab.close(bvr.src_el); //MTM
+            }//MTM
         '''
         } )
 

@@ -448,8 +448,9 @@ class LoginAction(DatabaseAction):
             active_users += 1
         
         # allow disabled and float type login user addition
-        if active_users > max_users and my.web.get_form_value('license_type') not in ['disabled','float']:
-            raise UserException("Max active users [%s] reached for your license"%max_users) 
+        # MTM off for testing
+        #if active_users > max_users and my.web.get_form_value('license_type') not in ['disabled','float']:
+        #    raise UserException("Max active users [%s] reached for your license"%max_users) 
 
         return True
             

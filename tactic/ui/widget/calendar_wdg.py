@@ -1033,6 +1033,7 @@ class CalendarInputWdg(BaseInputWdg):
             value = f.get_format_value(value, format)
 
             input.set_value(value)
+            input.add_attr('current_val',value) # MTM -- DID I DO THAT? (I THINK YES)
 
 
         kbd_bvr = {

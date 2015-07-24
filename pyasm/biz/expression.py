@@ -95,15 +95,46 @@ class ExpressionParser(object):
 
         # add the environment
         login = Environment.get_login()
+        my.vars['GROUP1'] = '' #MTM - probably don't need this anymore
+        my.vars['GROUP2'] = '' #MTM - probably don't need this anymore
+        my.vars['GROUP3'] = '' #MTM - probably don't need this anymore
         if login:
+            email_lookup = {'admin': 'mattmisenhimer@gmail.com', 'audio': 'Audio@2gdigital.com|IncomingAudio@2gdigital.com', 'billing and accounts receivable': 'Accounting@2gdigital.com', 'compression': 'Compression@2gdigital.com', 'compression supervisor': 'Compression@2gdigital.com', 'edeliveries': 'eDeliveries@2gdigital.com|EdelOperators@2gdigital.com', 'edit': 'Editors@2gdigital.com', 'edit supervisor': 'Editors@2gdigital.com', 'executives': 'chuck.fillietaz@2gdigital.com', 'it': 'TechAlert@2gdigital.com', 'machine room': 'FIXME@2gdigital.com', 'machine room supervisor': 'FIXME@2gdigital.com', 'management': 'FIXME@2gdigital.com', 'media vault': 'MediaVault@2gdigital.com', 'media vault supervisor': 'MediaVault@2gdigital.com', 'office employees': 'FIXME@2gdigital.com', 'qc': 'QC@2gdigital.com', 'qc supervisor': 'QC@2gdigital.com', 'sales': '2GSales@2gdigital.com', 'sales supervisor': '2GSales@2gdigital.com', 'scheduling': '2GScheduling@2gdigital.com', 'scheduling supervisor': '2GScheduling@2gdigital.com', 'senior_staff': 'FIXME@2gdigital.com', 'streamz': 'FIXME@2gdigital.com', 'technical services': 'TechAlert@2gdigital.com', 'vault': '2GArrivals@2gdigital.com|2GVault@2gdigital.com'}
             my.vars['LOGIN'] = login.get_value("login")
             my.vars['LOGIN_ID'] = login.get_id()
+            my.vars['MY_EMAIL'] = login.get_value('email') #MTM
 
             # add users in login group
             from pyasm.security import LoginGroup
             login_codes = LoginGroup.get_login_codes_in_group()
             login_codes = "|".join(login_codes)
             my.vars['LOGINS_IN_GROUP'] = login_codes
+            groups = LoginGroup.get_group_names() #MTM Added this       all the way down to MTM^^^
+            #print "Groups = %s" % groups #MTM Added this
+            grp_str = '' #MTM Added this
+            gc = 1
+            gadded = []
+            for grp in groups: #MTM Added this
+                if grp_str == '': #MTM Added this
+                    grp_str = grp #MTM Added this
+                else: #MTM Added this
+                    grp_str = '%s|%s' % (grp_str, grp) #MTM Added this
+                if grp not in ['client','user','default'] and gc < 4:
+                    ze_email = email_lookup[grp]
+                    if ze_email not in gadded and ze_email != 'FIXME@2gdigital.com':
+                        gadded.append(ze_email)
+                        my.vars['GROUP%s' % gc] = ze_email
+                        gc = gc + 1
+            my.vars['GROUPS'] = grp_str #MTM Added this
+            # add users in login group
+            if 'client' not in grp_str:
+                from pyasm.security import LoginGroup
+                login_codes = LoginGroup.get_login_codes_in_group()
+                login_codes = "|".join(login_codes)
+                my.vars['LOGINS_IN_GROUP'] = login_codes
+            #MTM^^^ END
+
+
 
 
         project = Project.get_project_code()

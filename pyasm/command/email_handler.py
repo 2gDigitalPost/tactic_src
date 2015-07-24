@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ["EmailHandler", 'TaskAssignEmailHandler', 'NoteEmailHandler', 'GeneralNoteEmailHandler', 'GeneralPublishEmailHandler','TaskStatusEmailHandler', 'SubmissionStatusEmailHandler', 'SubmissionEmailHandler', 'SubmissionNoteEmailHandler', 'TestEmailHandler']
+__all__ = ["EmailHandler", 'OrderInsertedEmail', 'OrderEditedEmail', 'NoteSender', 'MovementInfoSender', 'EquipmentInserted','TaskAssignEmailHandler', 'NoteEmailHandler', 'GeneralNoteEmailHandler', 'GeneralPublishEmailHandler','TaskStatusEmailHandler', 'SubmissionStatusEmailHandler', 'SubmissionEmailHandler', 'SubmissionNoteEmailHandler', 'TestEmailHandler'] #MTM added classes here
 
 from pyasm.common import Environment, Xml, Date
 from pyasm.security import Login, LoginGroup, Sudo
@@ -173,9 +173,585 @@ class EmailHandler(object):
         message = '%s\n\nReport from transaction:\n%s\n' % (message, subject)
         return message
 
+class OrderInsertedEmail(EmailHandler): # MTM added this whole class
+    def _get_login(my, assigned):
+        return Login.get_by_login(assigned)
 
+    def get_mail_users(my, column):
+        # mail groups
+        recipients = set()
+        sob = my.sobject
+        client_email_list = sob.get_value('client_email_list')
+        split = client_email_list.split(',')
+        for sp in split:
+            recipients.add(sp)
+        return recipients
 
+    def get_cc(my):
+        print "MY.GET_MAIL_USERS MAIL CC = %s" % my.get_mail_users("mail_cc")
+        return my.get_mail_users("mail_cc")
 
+    def kill_none(my, in_str):
+        out_str = ''
+        if in_str != None:
+            out_str = in_str
+        return out_str
+
+    def get_subject(my):
+        from tactic_client_lib import TacticServerStub
+        server = TacticServerStub.get()
+        order = my.sobject
+        client_code = my.kill_none(order.get_value('client_code'))
+        order_code = order.get_code()
+        order_name = my.kill_none(order.get_value('name'))
+        client_login = my.kill_none(order.get_value('client_login')) 
+        if client_login == '':
+            client_login = my.kill_none(order.get_value('login'))
+        client_name = 'NO CLIENT CODE' 
+        if client_code not in [None,'']:
+            client = server.eval("@SOBJECT(twog/client['code','%s'])" % client_code)
+            if client:
+                client = client[0]
+                client_name = my.kill_none(client.get('name'))
+     
+        subject = 'New Order for %s [%s]: %s [%s]' % (client_name, client_login, order_name, order_code)
+        return subject
+
+    def get_message(my):
+        from tactic_client_lib import TacticServerStub
+        server = TacticServerStub.get()
+        order = my.sobject
+        client_code = my.kill_none(order.get_value('client_code'))
+        order_code = order.get_code()
+        order_name = my.kill_none(order.get_value('name'))
+        order_login = my.kill_none(order.get_value('login'))
+        po_number = my.kill_none(order.get_value('po_number'))
+        client_login = my.kill_none(order.get_value('client_login')) 
+        clogin = server.eval("@SOBJECT(sthpw/login['login','%s'])" % client_login)
+        is_external = False
+        if clogin:
+            clogin = clogin[0]
+            if clogin.get('location') == 'external':
+                is_external = True
+        if client_login == '':
+            client_login = my.kill_none(order.get_value('login'))
+            
+        client_name = 'NO CLIENT CODE' 
+        if client_code not in [None,'']:
+            client = server.eval("@SOBJECT(twog/client['code','%s'])" % client_code)
+            if client:
+                client = client[0]
+                client_name = my.kill_none(client.get('name'))
+     
+        subject = 'New Order for %s [%s]: %s [%s]' % (client_name, client_login, order_name, order_code)
+        msg = []
+        msg.append("[%s]" % subject)
+        welcome1 = "A New Order has been added by "
+        if is_external:
+            welcome1 = '%s %s [%s]' % (welcome1, client_login, 'external') 
+        else:
+            welcome1 = '%s %s [%s]' % (welcome1, order_login, 'internal')
+        msg.append(welcome1)
+        msg.append("Client: %s" % client_name)
+        msg.append("Client Login: %s" % client_login)
+        msg.append("Name: %s" % order_name)
+        msg.append("PO Number: %s" % po_number)
+        msg.append("Classification: %s" % my.kill_none(order.get_value('classification')))
+        msg.append("Start Date: %s" % my.kill_none(order.get_value('start_date')))
+        msg.append("Due Date: %s" % my.kill_none(order.get_value('due_date')))
+        msg.append("Description: %s" % my.kill_none(order.get_value('description')))
+        return "\n".join(msg)
+
+class OrderEditedEmail(EmailHandler): # MTM added this whole class
+
+    def init(my):
+        my.prev_data = None
+        my.prev_data_arr = None
+
+    def _get_login(my, assigned):
+        return Login.get_by_login(assigned)
+
+    def get_mail_users(my, column):
+        # mail groups
+        recipients = set()
+        sob = my.sobject
+        client_email_list = sob.get_value('client_email_list')
+        split = client_email_list.split(',')
+        for sp in split:
+            recipients.add(sp)
+        return recipients
+
+    def get_cc(my):
+        print "MY.GET_MAIL_USERS MAIL CC = %s" % my.get_mail_users("mail_cc")
+        return my.get_mail_users("mail_cc")
+
+    def kill_none(my, in_str):
+        out_str = ''
+        if in_str != None:
+            out_str = in_str
+        return out_str
+
+    def get_subject(my):
+        from tactic_client_lib import TacticServerStub
+        from pyasm.common import Environment
+        login_obj = Environment.get_login()
+        login = login_obj.get_login()
+        server = TacticServerStub.get()
+        order = my.sobject
+        my.prev_data = order.get_prev_update_data()
+        print "ORDER STUFF = %s" % order
+        prev_data = my.prev_data
+        print "PREV DATA STUFF = %s" % prev_data
+        my.prev_data_arr = prev_data.keys()
+        prev_data_str = ''
+        for pd in my.prev_data_arr:
+            if prev_data_str == '':
+                prev_data_str = "'%s'" % pd
+            else:
+                prev_data_str = "%s,'%s'" % (prev_data_str, pd)
+        prev_data_str = "[%s]" % prev_data_str
+        print "STOP 1"
+        client_code = my.kill_none(order.get_value('client_code'))
+        print "STOP 2"
+        order_code = order.get_code()
+        order_name = my.kill_none(order.get_value('name'))
+        client_login = my.kill_none(order.get_value('client_login')) 
+        if client_login == '':
+            client_login = my.kill_none(order.get_value('login'))
+        client_name = 'NO CLIENT CODE' 
+        if client_code not in [None,'']:
+            client = server.eval("@SOBJECT(twog/client['code','%s'])" % client_code)
+            if client:
+                client = client[0]
+                client_name = my.kill_none(client.get('name'))
+     
+        subject = 'Order Edited %s by %s: %s [%s]' % (prev_data_str, login, order_name, order_code)
+        #subject = 'Order Edited By Client %s [%s]: %s [%s]' % (client_name, login, order_name, order_code)
+        return subject
+
+    def get_message(my):
+        from tactic_client_lib import TacticServerStub
+        from pyasm.common import Environment
+        login_obj = Environment.get_login()
+        login = login_obj.get_login()
+        server = TacticServerStub.get()
+        order = my.sobject
+        print "ORDER STUFF = %s" % order
+        prev_data = my.prev_data
+        print "PREV DATA STUFF = %s" % prev_data
+        update_desc = my.sobject.get_update_description()
+        client_code = my.kill_none(order.get_value('client_code'))
+        order_code = order.get_code()
+        order_name = my.kill_none(order.get_value('name'))
+        order_login = my.kill_none(order.get_value('login'))
+        po_number = my.kill_none(order.get_value('po_number'))
+        client_login = my.kill_none(order.get_value('client_login')) 
+        clogin = server.eval("@SOBJECT(sthpw/login['login','%s'])" % client_login)
+        is_external = False
+        if clogin:
+            clogin = clogin[0]
+            if clogin.get('location') == 'external':
+                is_external = True
+        if client_login == '':
+            client_login = my.kill_none(order.get_value('login'))
+            
+        client_name = 'NO CLIENT CODE' 
+        if client_code not in [None,'']:
+            client = server.eval("@SOBJECT(twog/client['code','%s'])" % client_code)
+            if client:
+                client = client[0]
+                client_name = my.kill_none(client.get('name'))
+        changes_str = ''
+        print "MSG PREV DATA ARR = %s" % my.prev_data_arr
+        for pd in my.prev_data_arr:
+            old_data = prev_data.get(pd)
+            new_data = order.get_value(pd)
+            print "%s: Old = %s, New = %s" % (pd, old_data, new_data)
+            if new_data != old_data:
+                if changes_str == '':
+                    changes_str = '%s\nOld Data: %s\nNew Data: %s\n' % (pd, old_data, new_data)
+                else:
+                    changes_str = '%s\n%s\nOld Data: %s\nNew Data: %s\n' % (changes_str, pd, old_data, new_data)
+     
+        #subject = 'Order Edited By Client %s [%s]: %s [%s]' % (client_name, login, order_name, order_code)
+        msg = []
+        #msg.append("[%s]" % subject)
+        welcome1 = "Order [po: %s] has been edited by " % po_number
+        if is_external:
+            welcome1 = '%s %s [%s]' % (welcome1, client_login, 'external') 
+        else:
+            welcome1 = '%s %s [%s]' % (welcome1, order_login, 'internal')
+        msg.append(welcome1)
+        msg.append("Client: %s" % client_name)
+        msg.append("Client Login: %s" % client_login)
+        msg.append("Name: %s" % order_name)
+        msg.append("PO Number: %s" % po_number)
+        msg.append("Classification: %s" % my.kill_none(order.get_value('classification')))
+        msg.append("Start Date: %s" % my.kill_none(order.get_value('start_date')))
+        msg.append("Due Date: %s" % my.kill_none(order.get_value('due_date')))
+        #msg.append("Description: %s" % my.kill_none(order.get_value('description')))
+        msg.append("\nChanges:\n%s" % changes_str)
+        #msg.append(update_desc)
+        return "\n".join(msg)
+
+class NoteSender(EmailHandler): # MTM added this whole class
+    def _get_login(my, assigned):
+        return Login.get_by_login(assigned)
+
+    def get_subject(my):
+        from tactic_client_lib import TacticServerStub
+        server = TacticServerStub.get()
+        note = my.sobject
+        print "NOTE = %s" % note
+        parent = note.get_parent()
+        print "PARENT = %s" % parent
+        code = parent.get_code()
+        print "CODE = %s" % code
+        work_order = None
+        proj = None
+        title = None
+        order = None
+        if 'WORK_ORDER' in code:
+            work_order = server.eval("@SOBJECT(twog/work_order['code','%s'])" % code)[0]
+            proj = server.eval("@SOBJECT(twog/proj['code','%s'])" % work_order.get('proj_code'))[0]
+            title = server.eval("@SOBJECT(twog/title['code','%s'])" % proj.get('title_code'))[0]
+            order = server.eval("@SOBJECT(twog/order['code','%s'])" % title.get('order_code'))[0]
+        elif 'PROJ' in code:
+            proj = server.eval("@SOBJECT(twog/proj['code','%s'])" % code)[0]
+            title = server.eval("@SOBJECT(twog/title['code','%s'])" % proj.get('title_code'))[0]
+            order = server.eval("@SOBJECT(twog/order['code','%s'])" % title.get('order_code'))[0]
+        elif 'TITLE' in code:
+            title = server.eval("@SOBJECT(twog/title['code','%s'])" % code)[0]
+            order = server.eval("@SOBJECT(twog/order['code','%s'])" % title.get('order_code'))[0]
+        elif 'ORDER' in code:
+            order = server.eval("@SOBJECT(twog/order['code','%s'])" % code)[0]
+        note_code = note.get_code()
+        parent_code = code
+        po_number = ''
+        order_name = ''
+        title_title = ''
+        title_episode = ''
+    
+        if order: 
+            po_number = order.get('po_number')
+            order_name = order.get('name')
+        if title:
+            title_title = title.get('title')
+            title_episode = title.get('episode')
+     
+        subject = '%s(%s) - %s: %s - %s for %s' % (order_name, po_number, title_title, title_episode, note_code, parent_code)
+        return subject
+
+    def kill_none(my, in_str):
+        out_str = ''
+        if in_str != None:
+            out_str = in_str
+        return out_str
+
+    def get_message(my):
+        from tactic_client_lib import TacticServerStub
+        server = TacticServerStub.get()
+        note = my.sobject
+        parent = note.get_parent()
+        code = parent.get_code()
+        work_order = None
+        proj = None
+        title = None
+        order = None
+        if 'WORK_ORDER' in code:
+            work_order = server.eval("@SOBJECT(twog/work_order['code','%s'])" % code)[0]
+            proj = server.eval("@SOBJECT(twog/proj['code','%s'])" % work_order.get('proj_code'))[0]
+            title = server.eval("@SOBJECT(twog/title['code','%s'])" % proj.get('title_code'))[0]
+            order = server.eval("@SOBJECT(twog/order['code','%s'])" % title.get('order_code'))[0]
+        elif 'PROJ' in code:
+            proj = server.eval("@SOBJECT(twog/proj['code','%s'])" % code)[0]
+            title = server.eval("@SOBJECT(twog/title['code','%s'])" % proj.get('title_code'))[0]
+            order = server.eval("@SOBJECT(twog/order['code','%s'])" % title.get('order_code'))[0]
+        elif 'TITLE' in code:
+            title = server.eval("@SOBJECT(twog/title['code','%s'])" % code)[0]
+            order = server.eval("@SOBJECT(twog/order['code','%s'])" % title.get('order_code'))[0]
+        elif 'ORDER' in code:
+            order = server.eval("@SOBJECT(twog/order['code','%s'])" % code)[0]
+        note_code = note.get_code()
+        parent_code = code
+        po_number = ''
+        order_name = ''
+        title_title = ''
+        title_episode = ''
+    
+        msg = []
+        if order: 
+            po_number = my.kill_none(order.get('po_number'))
+            order_name = my.kill_none(order.get('name'))
+        if title:
+            title_title = my.kill_none(title.get('title'))
+            title_episode = my.kill_none(title.get('episode'))
+     
+        subject = '%s(%s) - %s: %s - %s for %s' % (order_name, po_number, title_title, title_episode, note_code, parent_code)
+        print "SUBJECT = %s" % subject
+        msg.append("[%s]" % subject)
+        print "MSG = %s" % msg
+        if order:
+            order_name = my.kill_none(order.get('name'))
+            po_number = my.kill_none(order.get('po_number'))
+            order_code = my.kill_none(order.get('code'))
+            msg.append("Order: %s (%s)  [[%s]]" % (order_name, po_number, order_code))
+        if title:
+            part = title.get('strat2g_part')
+            if part in [None,'']:
+                part = title.get('part')
+            part = my.kill_none(part)
+            msg.append("Title: %s: %s, %s [%s] [[%s]]" % (title_title, title_episode, part, my.kill_none(title.get('barcode')), my.kill_none(title.get('code'))))
+        if proj:
+            msg.append('Proj: %s [[%s]]' % (my.kill_none(proj.get('process')), my.kill_none(proj.get('code'))))
+        if work_order:
+            msg.append('Work Order: %s [[%s]], Task Code: %s' % (my.kill_none(work_order.get('process')), my.kill_none(work_order.get('code')), my.kill_none(work_order.get('task_code')))) 
+        if msg == []:
+            msg.append(code)
+        msg.append(" ")
+        msg.append("NOTE:")
+        msg.append(note.get_value('note').encode('utf-8'))
+        return "\n".join(msg)
+
+class MovementInfoSender(EmailHandler): # MTM added this whole class
+    #def _get_login(my, assigned):
+    #    print "_GET_LOGIN RESULT = %s" % Login.get_by_login(assigned)
+    #    return Login.get_by_login(assigned)
+
+    #def get_cc(my):
+    #    print "GET CC RESULT = %s" % my.get_mail_users("mail_cc")
+    #    return my.get_mail_users("mail_cc")
+
+    def get_subject(my):
+        from tactic_client_lib import TacticServerStub
+        server = TacticServerStub.get()
+        print "SERVER = %s" % server
+        movement = my.sobject
+        movement_code = movement.get_code()
+        movement_name = movement.get_value('name')
+        subject = 'New Arrivals: %s' % movement_name
+        return subject
+
+    def kill_none(my, in_str):
+        out_str = ''
+        if in_str != None:
+            out_str = in_str
+        return out_str
+
+    def get_message(my):
+        from tactic_client_lib import TacticServerStub
+        server = TacticServerStub.get()
+        movement = my.sobject
+        movement_code = movement.get_code()
+        movement_name = movement.get_value('name')
+        atms = server.eval("@SOBJECT(twog/asset_to_movement['movement_code','%s'])" % movement_code)
+        msg = []
+        sending_comp = movement.get_value('sending_company_code')
+        receiving_comp = movement.get_value('receiving_company_code')
+        sender = server.eval("@SOBJECT(twog/company['code','%s'])" % sending_comp)
+        receiver = server.eval("@SOBJECT(twog/company['code','%s'])" % receiving_comp)
+        company_from = ''
+        company_to = ''
+        if sender:
+            sender = sender[0]
+            company_from = sender.get('name')
+        if receiver:
+            receiver = receiver[0]
+            company_to = receiver.get('name')
+        msg.append('Movement %s: From: %s To: %s\n' % (movement_name, company_from, company_to))
+        msg.append('The following assets have arrived:\n')
+        for atm in atms:
+            source = server.eval("@SOBJECT(twog/source['code','%s'])" % atm.get('source_code'))
+            if source:
+                source = source[0]
+                barcode = source.get('barcode')
+                aspect_ratio = source.get('aspect_ratio')
+                client_asset_id = source.get('client_asset_id')
+                client_code = source.get('client_code')
+                client = server.eval("@SOBJECT(twog/client['code','%s'])" % client_code)
+                client_name = ''
+                if client:
+                    client = client[0]
+                    client_name = client.get('name') 
+                episode = source.get('episode') 
+                file_type = source.get('file_type')
+                format = source.get('format')
+                frame_rate = source.get('frame_rate')
+                generation = source.get('generation')
+                high_security = source.get('high_security')
+                move_in_type = source.get('move_in_type')
+                outside_barcodes = server.eval("@SOBJECT(twog/outside_barcode['source_code','%s'])" % source.get('code'))
+                ob_str = ''
+                for ob in outside_barcodes:
+                    if ob_str == '':
+                        ob_str = ob.get('barcode')
+                    else:
+                        ob_str = '%s, %s' % (ob_str, ob.get('barcode'))
+                po_number = source.get('po_number')
+                season = source.get('season')
+                source_type = source.get('source_type')
+                standard = source.get('standard')
+                title = source.get('title')
+                trt = source.get('total_run_time')
+                version = source.get('version')
+                msg.append(source.get('code'))
+                msg.append('---------------------------------------------------------------------------------')
+                if high_security:
+                    msg.append('\nHIGH SECURITY')
+                msg.append('Barcode: %s   \nTitle: %s   \nEpisode: %s   \nSeason: %s   \nVersion: %s' % (barcode, title, episode, season, version))
+                msg.append('\nClient: %s   \nClient Asset Id: %s' % (client_name, client_asset_id)) 
+                msg.append('\nMove-In Type: %s   \nSource Type: %s   \nFile Type: %s   \nGeneration: %s' % (move_in_type, source_type, file_type, generation))
+                msg.append('\nTRT: %s   \nAspect Ratio: %s   \nFormat: %s   \nFrame Rate: %s   \nStandard: %s' % (trt, aspect_ratio, format, frame_rate, standard))
+                if ob_str != '':
+                    msg.append('\nOutside Barcodes: %s' % ob_str)
+                if high_security:
+                    msg.append('\nHIGH SECURITY')
+                msg.append('---------------------------------------------------------------------------------')
+                msg.append('\n')
+        msg.append(movement.get_value('description').encode('utf-8'))
+        return "\n".join(msg)
+
+class EquipmentInserted(EmailHandler): # MTM added this whole class
+    def get_cc(my):
+        print "MY GET MAIL USERS MAIL CC = %s" % my.get_mail_users("mail_cc")
+        return my.get_mail_users("mail_cc")
+
+    def get_bcc(my):
+        print "MY GET MAIL USERS MAIL BCC = %s" % my.get_mail_users("mail_bcc")
+        return my.get_mail_users("mail_bcc")
+
+    def get_to(my):
+        from tactic_client_lib import TacticServerStub
+        from pyasm.common import Environment
+        recipients = set()
+        to = 'matt.misenhimer@2gdigital.com'
+        login_obj = Environment.get_login()
+        login = login_obj.get_login()
+        server = TacticServerStub.get()
+        eq = my.sobject
+        wo_code = eq.get_value('work_order_code')
+        
+        if wo_code not in [None,'']:
+            wo = server.eval("@SOBJECT(twog/work_order['code','%s'])" % wo_code)
+            if wo:
+                wo = wo[0]
+                if wo.get('login') != login:
+                    the_obj = Login.get_by_code(wo.get('login'))
+                    if the_obj:
+                        recipients.add(the_obj)
+#                    creator_login_obj = server.eval("@SOBJECT(sthpw/login['login','%s'])" % wo.get('login'))
+#                    if creator_login_obj:
+#                        creator_login_obj = creator_login_obj[0]
+#                        #to = creator_login_obj.get('email')
+#                        to = creator_login_obj
+        print "RETURN Recipients: %s" % recipients        
+        return recipients
+
+    def get_subject(my):
+        from tactic_client_lib import TacticServerStub
+        server = TacticServerStub.get()
+        eq = my.sobject
+        equipment_name = eq.get_value('name')
+        work_order_code = eq.get_value('work_order_code')
+        work_order = None
+        proj = None
+        title = None
+        order = None
+        if work_order_code not in [None,'']:
+            work_order = server.eval("@SOBJECT(twog/work_order['code','%s'])" % work_order_code)[0]
+            proj = server.eval("@SOBJECT(twog/proj['code','%s'])" % work_order.get('proj_code'))[0]
+            title = server.eval("@SOBJECT(twog/title['code','%s'])" % proj.get('title_code'))[0]
+            order = server.eval("@SOBJECT(twog/order['code','%s'])" % title.get('order_code'))[0]
+        po_number = ''
+        order_name = ''
+        title_title = ''
+        title_episode = ''
+        proj_code = ''
+        if order: 
+            po_number = order.get('po_number')
+            order_name = order.get('name')
+        if title:
+            title_title = title.get('title')
+            title_episode = title.get('episode')
+        if proj:
+            proj_code = proj.get('code')
+     
+        subject = 'Equipment Added by Operator in %s (%s), to %s: %s-%s-%s ' % (order_name, po_number, title_title, title_episode, proj_code, work_order_code)
+        return subject
+
+    def kill_none(my, in_str):
+        out_str = ''
+        if in_str != None:
+            out_str = in_str
+        return out_str
+
+    def get_message(my):
+        from tactic_client_lib import TacticServerStub
+        from pyasm.common import Environment
+        login_obj = Environment.get_login()
+        login = login_obj.get_login()
+        server = TacticServerStub.get()
+        eq = my.sobject
+        eq_code = eq.get_code()
+        equip = server.eval("@SOBJECT(twog/equipment_used['code','%s'])" % eq_code)[0]
+        equipment_name = equip.get('name')
+        work_order_code = equip.get('work_order_code')
+        work_order = None
+        proj = None
+        title = None
+        order = None
+        if work_order_code not in [None,'']:
+            work_order = server.eval("@SOBJECT(twog/work_order['code','%s'])" % work_order_code)[0]
+            proj = server.eval("@SOBJECT(twog/proj['code','%s'])" % work_order.get('proj_code'))[0]
+            title = server.eval("@SOBJECT(twog/title['code','%s'])" % proj.get('title_code'))[0]
+            order = server.eval("@SOBJECT(twog/order['code','%s'])" % title.get('order_code'))[0]
+        po_number = ''
+        order_name = ''
+        title_title = ''
+        title_episode = ''
+        proj_code = ''
+        if order: 
+            po_number = order.get('po_number')
+            order_name = order.get('name')
+        if title:
+            title_title = title.get('title')
+            title_episode = title.get('episode')
+        if proj:
+            proj_code = proj.get('code')
+     
+        subject = 'Equipment Added by Operator in %s (%s), to %s: %s-%s-%s ' % (order_name, po_number, title_title, title_episode, proj_code, work_order_code)
+        msg = []
+        msg.append(subject)
+        if order:
+            order_name = my.kill_none(order.get('name'))
+            po_number = my.kill_none(order.get('po_number'))
+            order_code = my.kill_none(order.get('code'))
+            msg.append("Order: %s (%s)  [[%s]]" % (order_name, po_number, order_code))
+        if title:
+            part = title.get('strat2g_part')
+            if part in [None,'']:
+                part = title.get('part')
+            part = my.kill_none(part)
+            msg.append("Title: %s: %s, %s [%s] [[%s]]" % (title_title, title_episode, part, my.kill_none(title.get('barcode')), my.kill_none(title.get('code'))))
+            msg.append('Title Pipeline: %s' % title.get('pipeline_code'))
+        if proj:
+            msg.append('Proj: %s [[%s]]' % (my.kill_none(proj.get('process')), my.kill_none(proj.get('code'))))
+            msg.append('Proj Pipeline: %s' % proj.get('pipeline_code'))
+        if work_order:
+            msg.append('Work Order: %s [[%s]], Task Code: %s' % (my.kill_none(work_order.get('process')), my.kill_none(work_order.get('code')), my.kill_none(work_order.get('task_code')))) 
+        if msg == []:
+            msg.append(eq_code)
+        msg.append(" ")
+        msg.append("EQUIPMENT INSERTED by %s:" % login)
+        msg.append(eq_code)
+        msg.append('Name: %s' % equipment_name)
+        msg.append('Estimated Quantity: %s' % equip.get('expected_quantity'))
+        msg.append('Units: %s' % equip.get('units'))
+        msg.append('Estimated Duration: %s' % equip.get('expected_duration'))
+
+        msg.append('Description: %s' % equip.get('description'))
+        
+        return "\n".join(msg)
 
 
 class TaskAssignEmailHandler(EmailHandler):

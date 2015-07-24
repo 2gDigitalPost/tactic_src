@@ -542,13 +542,182 @@ class SimpleSearchWdg(BaseRefreshWdg):
                 'new_search':   True,
                 'panel_id':     my.prefix
             }
+        #MTM ADDED THIS
+        js_matched = '''
+            function get_search_values(search_top) {            
+                // get all of the search input values
+                var new_values = [];
+                if (search_top) {
+                    var search_containers = search_top.getElements('.spt_search_filter')
+                    for (var i = 0; i < search_containers.length; i++) {
+                        var values = spt.api.Utility.get_input_values(search_containers[i],null, false);
+                        new_values.push(values);
+                    }
+            
+                    var ops = search_top.getElements(".spt_op");
+            
+                    // special code for ops
+                    var results = [];
+                    var levels = [];
+                    var modes = [];
+                    var op_values = [];
+                    for (var i = 0; i < ops.length; i++) {
+                        var op = ops[i];
+                        var level = op.getAttribute("spt_level");
+                        level = parseInt(level);
+                        var op_value = op.getAttribute("spt_op");
+                        results.push( [level, op_value] );
+                        var op_mode = op.getAttribute("spt_mode");
+                        levels.push(level);
+                        op_values.push(op_value);
+                        modes.push(op_mode);
+            
+                    }
+                    var values = {
+                        prefix: 'search_ops',
+                        levels: levels,
+                        ops: op_values,
+                        modes: modes
+                    };
+                    new_values.push(values);
+            
+                    // find the table/simple search as well
+                    var panel = search_top.getParent(".spt_view_panel");
+                    var table_searches = panel.getElements(".spt_table_search");
+                    for (var i = 0; i < table_searches.length; i++) {
+                        var table_search = table_searches[i];
+                        var values = spt.api.Utility.get_input_values(table_search,null,false);
+                        new_values.push(values);
+                    }
+                }
+            
+            
+            
+            
+            
+                // convert to json
+                var json_values = JSON.stringify(new_values);
+                return json_values;
+            
+            }
+            var activator = spt.smenu.get_activator(bvr);
+            var table = document.getElementsByClassName("spt_table_top")[0];
+            var layout = document.getElementsByClassName("spt_layout")[0];
+            if(activator){
+                table = spt.get_cousin( activator, '.spt_table_top', '.spt_table' );
+                layout = activator.getParent(".spt_layout");
+            }
+        
+            //var layout = activator.getParent(".spt_layout");
+            spt.table.set_layout(layout);
+        
+        
+            var version = layout.getAttribute("spt_version");
+            var search_type = table.get("spt_search_type");
+            var view = table.get("spt_view");
+            var search_class = table.get("spt_search_class");
+            var tmp_bvr = {};
+        
+        
+            var header = spt.table.get_header_row();
+            // include header input for widget specific settings
+            var header_inputs = spt.api.Utility.get_input_values(header, null, false);
+            var search_values_dict = header_inputs;
+        
+            var search_view;
+            // init the args to be passed to CsvExportWdg
+            tmp_bvr.args = {
+                'table_id': table.get('id'),
+                'search_type': search_type,
+                'selected_search_keys': '',
+                'view': view,
+                'search_class': search_class,
+                'mode': 'export_matched',
+                'search_view': search_view
+            };
+            var title = '';
+            var sel_search_keys = [];
+            title = 'Export Matched items from "' + search_type + '" list ';
+            var top = table.getParent(".spt_view_panel");
+            var search_wdg;
+            if (top) {
+                search_wdg = top.getElement(".spt_search");
+                var matched_search_type = search_type == top.getAttribute('spt_search_type');
+                var simple_search_view  = top.getAttribute('spt_simple_search_view');
+                search_view = search_wdg.getAttribute("spt_view");
+                tmp_bvr.args.search_view = search_view;
+                tmp_bvr.args.simple_search_view = simple_search_view;
+            }
+            if (!top || !search_wdg || !matched_search_type) {
+                spt.alert('The search box is not found. Please use "Export Selected, Export Displayed" instead')
+                return;
+            }
+            var search_values = get_search_values(search_wdg);
+            search_values_dict['json'] = search_values;
+        
+        
+        
+            var view_name = '';
+            var main_panel = document.getElementsByClassName("spt_main_panel")[0];
+            //LOST AFTER HERE - COMMENT LINES OUT BELOW AND SEE WHICH ONE(s) ARE CAUSING THE PROBLEM
+            if(activator){
+                var main_panel = activator.getParent('.spt_main_panel');
+            }
+            if( main_panel ) {
+                var bcrumb = main_panel.getParent('div').getElement('#breadcrumb');
+                if (bcrumb != null && bcrumb.firstChild) {
+                    view_name = bcrumb.firstChild.nodeValue;
+                    title += 'in [' + view_name + '] view';
+                }
+                else {
+                    title += 'in [' + view + '] view';
+                     
+                }
+            }
+            else {
+                title += 'in [' + view + '] view';
+            }
+        
+            tmp_bvr.options = {
+                'title': title + " to CSV",
+                'class_name': 'tactic.ui.widget.CsvExportWdg',
+                'popup_id' : 'Export CSV',
+                'view': view
+            };
+            //tmp_bvr.args.selected_search_keys = sel_search_keys;
+            tmp_bvr.values = search_values_dict;
+            var popup = spt.popup.get_widget( evt, tmp_bvr );
+            // add the search_values_dict to the popup
+            popup.values_dict = search_values_dict;
+        //end of matched export
+        '''
 
+        #export_bvr = {'type': 'click_up', 'bvr_cb': {'cbjs_action': 'spt.dg_table.matched_export_cbk'}, 'cbfn_action': 'spt.dg_table.matched_export_cbk'}
+        export_bvr = {'type': 'click_up', 'bvr_cb': {'cbjs_action': js_matched}, 'cbfn_action': js_matched}
+        #export_bvr = {'type': 'click_up', 'bvr_cb': {'cbjs_action': 'spt.dg_table.gear_smenu_export_cbk{evt,bvr);', 'cbfn_action': 'spt.dg_table.gear_smenu_export_cbk{evt,bvr);', 'mode': 'export_matched'}}
+        table = Table()
+        table.add_attr('width','100%%')
+        table.add_row()
+        show_export_button = True
+        if 'show_export_button' in my.kwargs.keys():
+            show_export_button = my.kwargs.get('show_export_button')
+            if show_export_button in [False,'false','False']:
+                show_export_button = False
+            elif show_export_button in ['','True','true',True]:
+                show_export_button = True
+        if show_export_button:  
+            button0 = ActionButtonWdg(title='Export Matched ', tip='Export Matched Records', width='100')
+            button0.add_behavior( export_bvr )
+            table.add_cell(button0)
+            longerguy0 = table.add_cell('&nbsp;')
+            longerguy0.add_attr('width','400px')
         button = ActionButtonWdg(title='Search', tip='Run search with this criteria' )
-        search_div.add(button)
-        #button.add_style("margin-top: -7px")
+        sbutt = table.add_cell(button)
+        sbutt.add_attr('align','right')
+        longerguy = table.add_cell('&nbsp;')
+        longerguy.add_attr('width','65%%')
         button.add_behavior( run_search_bvr )
-
-        return search_div
+        return table
 
 
 

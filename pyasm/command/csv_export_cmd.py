@@ -59,7 +59,6 @@ class CsvExportCmd(Command):
         assert my.view
         assert my.file_path
 
-    
         search = Search(my.search_type)
         if my.search_ids:
             search.add_enum_order_by("id", my.search_ids)

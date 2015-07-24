@@ -142,6 +142,13 @@ spt.dg_table_action.csv_export = function( evt, bvr )
     var class_name = "pyasm.widget.CsvDownloadWdg";
     var column_name_vals = spt.api.Utility.get_input_values('csv_export_table', 'input[name=' + bvr.column_names+']');
     var selected_search_keys = '';
+    //MTM Need for client view exports
+    var view = bvr.view;
+    var export_type = 'nada'
+    if(view == 'client_view_order_wdg'){
+        export_type = 'straight_export'
+    }
+    //MTM End
     if (my_is_export_all != 'true')
         selected_search_keys = bvr.search_keys;
     
@@ -169,7 +176,8 @@ spt.dg_table_action.csv_export = function( evt, bvr )
         filename: filename,
         column_names: column_names,
         search_keys: selected_search_keys,
-        include_id: my_include_id 
+        include_id: my_include_id, 
+        'export_type': export_type //MTM
     };
     var popup = bvr.src_el.getParent('.spt_popup');
     // this is assgined in spt.dg_table.gear_smenu_export_cbk 
@@ -181,7 +189,13 @@ spt.dg_table_action.csv_export = function( evt, bvr )
     var kwargs = {'args': options, 'values': values};
     var rtn_file_name = '';
     try {
-        rtn_file_name = server.get_widget(class_name, kwargs);
+        //MTM Need for client view
+        if(view == 'client_view_order_wdg'){
+            rtn_file_name = server.get_widget('client_view.ClientCSVExportWdg', kwargs);
+        }else{
+            rtn_file_name = server.get_widget(class_name, kwargs);
+        }
+        //MTM End
     } catch(e) {
         spt.error(spt.exception.handler(e));
         return;

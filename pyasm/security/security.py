@@ -1358,10 +1358,10 @@ class Security(Base):
                 
             # verify that this won't create too many users.  Floating licenses
             # can have any number of users
-            if my._login.has_user_license():
-                num_left = my.license.get_num_licenses_left()
-                if num_left <= 0:
-                    raise SecurityException("Number of active users exceeds licenses")
+            #if my._login.has_user_license(): #MTM Turned off for now...
+            #    num_left = my.license.get_num_licenses_left() #MTM turned off for now...
+                #if num_left <= 0: # MTM turned this off for now...
+                #    raise SecurityException("Number of active users exceeds licenses") # MTM turned this off for now...
 
             my._login.commit()
 
@@ -1768,8 +1768,8 @@ class License(object):
         if login_name and login_name in floating_current_users:
             return True
 
-        if floating_current >= floating_max:
-            raise LicenseException("Too many users. Please try again later")
+        #if floating_current >= floating_max: #MTM TURNED OFF FOR NOW
+        #    raise LicenseException("Too many users. Please try again later") #MTM TURNED OFF FOR NOW
 
 
     def get_data(my, key):
@@ -1902,48 +1902,49 @@ class License(object):
 
         version = my.xml.get_value("license/version")
         # for now, there is only one version of the license
-        if 1:
-            # check for mac address, if it exists in license
-            license_mac = my.xml.get_value("license/data/mac_address")
-            license_mac = license_mac.strip()
-            if license_mac:
-                mac = my.get_mac_address()
-                if mac != license_mac:
-                    raise LicenseException("License mac address do not match")
-
-            # check for expiry date, if it exists
-            license_expiry = my.xml.get_value("license/data/expiry_date")
-            license_expiry = license_expiry.strip()
-            if license_expiry:
-                current = Date().get_db_time()
-                if current> license_expiry:
-                    raise LicenseException("License expired on [%s] in [%s]" % (license_expiry, my.license_path))
+        #MTM turned off for now...
+#        if 1:
+#            # check for mac address, if it exists in license
+#            license_mac = my.xml.get_value("license/data/mac_address")
+#            license_mac = license_mac.strip()
+#            if license_mac:
+#                mac = my.get_mac_address()
+#                if mac != license_mac:
+#                    raise LicenseException("License mac address do not match")
+#
+#            # check for expiry date, if it exists
+#            license_expiry = my.xml.get_value("license/data/expiry_date")
+#            license_expiry = license_expiry.strip()
+#            if license_expiry:
+#                current = Date().get_db_time()
+#                if current> license_expiry:
+#                    raise LicenseException("License expired on [%s] in [%s]" % (license_expiry, my.license_path))
 
 
 
 
             # check for tactic version
-            license_version = my.xml.get_value("license/data/tactic_version")
-            release_version = Environment.get_release_version()
-            if not license_version:
-                raise LicenseException("License file not locked to a specific version of TACTIC")
-            try:
-                if license_version in ["EPL", "ALL"]:
-                    # really big
-                    license_version = 10**6
-                else:
-                    parts = license_version.split(".")
-                    license_version = float("%s.%s" % (parts[0],parts[1])) 
-
-                parts = release_version.split(".")
-                release_version = float("%s.%s" % (parts[0],parts[1])) 
-
-            except:
-                raise LicenseException("Incorrect format for version in license file")
-
-            else:
-                if release_version > license_version:
-                    raise LicenseException("License not valid for this version of TACTIC. License is for v%s" % license_version)
+# - MTM            license_version = my.xml.get_value("license/data/tactic_version")
+# - MTM            release_version = Environment.get_release_version()
+# - MTM            if not license_version:
+# - MTM                raise LicenseException("License file not locked to a specific version of TACTIC")
+# - MTM            try:
+# - MTM                if license_version in ["EPL", "ALL"]:
+# - MTM                    # really big
+# - MTM                    license_version = 10**6
+# - MTM                else:
+# - MTM                    parts = license_version.split(".")
+# - MTM                    license_version = float("%s.%s" % (parts[0],parts[1])) 
+# - MTM
+# - MTM                parts = release_version.split(".")
+# - MTM                release_version = float("%s.%s" % (parts[0],parts[1])) 
+# - MTM
+# - MTM            except:
+# - MTM                raise LicenseException("Incorrect format for version in license file")
+# - MTM
+# - MTM            else:
+# - MTM                if release_version > license_version:
+# - MTM                    raise LicenseException("License not valid for this version of TACTIC. License is for v%s" % license_version)
 
 
 
@@ -1951,19 +1952,19 @@ class License(object):
 
 
             # check for max users
-            license_users = my.get_max_users()
-            if license_users:
-                license_users = int(license_users)
-                try:
-                    current = my.get_current_users()
-                except DatabaseException:
-                    # set it to zero.  If there is a database error, then
-                    # it doesn't really matter because nobody can use the
-                    # software anways
-                    current = 0
-                    
-                if current > license_users:
-                    raise LicenseException("Too many users for license [%s]" % my.license_path)
+#  - MTM           license_users = my.get_max_users()
+#  - MTM           if license_users:
+#  - MTM               license_users = int(license_users)
+#  - MTM               try:
+#  - MTM                   current = my.get_current_users()
+#  - MTM               except DatabaseException:
+#  - MTM                   # set it to zero.  If there is a database error, then
+#  - MTM                   # it doesn't really matter because nobody can use the
+#  - MTM                   # software anways
+#  - MTM                   current = 0
+#  - MTM                   
+#  - MTM               if current > license_users:
+# -  MTM                   raise LicenseException("Too many users for license [%s]" % my.license_path)
         #print "License verified ... "
 
 

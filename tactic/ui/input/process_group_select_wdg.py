@@ -58,14 +58,14 @@ class ProcessGroupSelectWdg(BaseInputWdg):
                 group = attrs.get('%s_login_group'%my.get_name())
             if group:
             
-                values_expr = "@GET(sthpw/login_group['login_group', '%s'].sthpw/login_in_group.sthpw/login.login)"%group
+                values_expr = "@GET(sthpw/login_group['login_group', '%s'].sthpw/login_in_group.sthpw/login['location','internal'].login)"%group # MTM
                 if my.labels_attr:
-                    labels_expr = ["@GET(sthpw/login_group['login_group', '%s'].sthpw/login_in_group.sthpw/login.%s)"%(group, x.strip()) for x in my.labels_attr]
+                    labels_expr = ["@GET(sthpw/login_group['login_group', '%s'].sthpw/login_in_group.sthpw/login['location','internal'].%s)"%(group, x.strip()) for x in my.labels_attr] #MTM
                     labels_expr =  ' + &nbsp + '.join(labels_expr)
             else:
-                values_expr = "@GET(sthpw/login.login)"
+                values_expr = "@GET(sthpw/login['location','internal'].login)" # MTM
                 if my.labels_attr:
-                    labels_expr = ["@GET(sthpw/login.%s)"%(x.strip()) for x in my.labels_attr]
+                    labels_expr = ["@GET(sthpw/login['location','internal'].%s)"%(x.strip()) for x in my.labels_attr] #MTM
                     labels_expr =  ' + &nbsp + '.join(labels_expr)
             select = SelectWdg(my.get_input_name())
             select.add_empty_option("-- Select a User --")
@@ -86,13 +86,13 @@ class ProcessGroupSelectWdg(BaseInputWdg):
 
 
         #all_users = Search.eval("@GET(sthpw/login.login)")
-        all_users = Search.eval("@SOBJECT(sthpw/login)")
+        all_users = Search.eval("@SOBJECT(sthpw/login['location','internal'])") # MTM
         all_users_label =  []
         
         # don't use expression here since it's not as db-efficient as retrieving the sobjects
         """
         if my.labels_attr:
-            labels_expr = ["@GET(sthpw/login.login.%s)"%x.strip() for x in my.labels_attr]
+            labels_expr = ["@GET(sthpw/login['location','internal'].login.%s)"%x.strip() for x in my.labels_attr]
         """
         '''
         groups = Search.eval("@SOBJECT(sthpw/login_group)")
@@ -100,7 +100,7 @@ class ProcessGroupSelectWdg(BaseInputWdg):
         for group in groups:
             group_users =
 Search.eval("@GET(sthpw/login_group['login_group',
-'%s'].sthpw/login_in_group.sthpw/login.login)"%group.get_value('login_group'))
+'%s'].sthpw/login_in_group.sthpw/login['location','internal'].login)"%group.get_value('login_group'))
             group_dict[group.get_value('login_group')] = group_users
         '''
 

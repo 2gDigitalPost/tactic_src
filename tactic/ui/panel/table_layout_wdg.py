@@ -599,7 +599,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                 if (input.search_key) {
                     var row = table.getElement('.spt_table_row[spt_search_key=' + input.search_key+ ']');
                     var sks = [input.search_key];
-                    spt.table.refresh_rows([row], sks, {}) 
+                    if(row != null && row != ''){//MTM
+                        spt.table.refresh_rows([row], sks, {}) 
+                    }//MTM
                 }
                 '''
                 })
@@ -681,6 +683,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         group_span.add(my.get_group_wdg() )
         inner.add(group_span)
 
+        #MTM relocated this here, from below, so I'll have "info" for the duplicated page bar
         info = my.search_limit.get_info()
         if info.get("count") == None:
             info["count"] = len(my.sobjects)
@@ -716,7 +719,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             #column_widths = [60]
             #my.kwargs["column_widths"] = column_widths
 
-
+        
         my.element_names = my.config.get_element_names()  
        
         for i, widget in enumerate(my.widgets):
@@ -794,7 +797,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             h_scroll.add(scroll)
             height = my.kwargs.get("height")
             if not height:
-                height = "500px"
+                height = "1000px" #MTM HERE IS WHERE YOU CAN ADJUST THE HEIGHT OF TABLES
             scroll.add_style("height: %s" % height)
 
             scroll.add_style("overflow-y: auto")
@@ -851,9 +854,11 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         table.set_id(my.table_id)
         
 
+        security = Environment.get_security()                                                #MTM
+        login_groups = security.get_group_names()                                            #MTM
         # set up the context menus
         show_context_menu = my.kwargs.get("show_context_menu")
-        if show_context_menu in ['false', False]:
+        if show_context_menu in ['false', False] or 'client' in login_groups: #MTM
             show_context_menu = False
         elif show_context_menu == 'none':
             pass
@@ -1250,7 +1255,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         reverse=False
         # TODO: check this dict my.group_dict
 
-        if True in my.group_by_time.values():
+        if True in my.group_by_time.values(): #MTM
             reverse = True
         elif my.order_element and my.order_element.endswith(' desc'):
             reverse = True
@@ -1307,8 +1312,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
         if not column_widths:
             column_widths = []
 
-        
-
         if my.kwargs.get('temp') != True:
             table.add_behavior( {
                 'type': 'load',
@@ -1330,12 +1333,9 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                     var width = bvr.column_widths[i];
                     spt.table.set_column_width(name, width);
                 }
-
-               
                 '''
             } )
 
-       
 
 
         """
@@ -1851,7 +1851,7 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
             sortable = my.attributes[i].get("sortable") != "false"
             if sortable:
 
-                if my.order_element == name or my.order_element == "%s asc" % name:
+                if my.order_element == name or my.order_element == "%s asc" % name: #MTM 
                     th.add_styles("background-image: url(/context/icons/common/order_array_down_1.png);")
                 elif my.order_element == "%s desc" % name:
                     th.add_styles("background-image: url(/context/icons/common/order_array_up_1.png);")
@@ -1979,8 +1979,6 @@ class FastTableLayoutWdg(BaseTableLayoutWdg):
                     return True
             
         return False
-
-
     def has_bottom_wdg(my):
         '''return True if a widget has bottom widget defined'''
         for widget in my.widgets:
@@ -3764,7 +3762,6 @@ spt.table.show_edit = function(cell) {
         return;
     }
 
-    
 
     // remove the first child
     // FIXME: should we rely on firstChild?
@@ -5776,25 +5773,31 @@ spt.table.row_ctx_menu_edit_cbk = function(evt, bvr)
     var activator = spt.smenu.get_activator(bvr);
     var row = activator;
     var search_key = row.getAttribute("spt_search_key");
-    var search_key_info = spt.dg_table.parse_search_key( search_key );
-    var edit_view = bvr.edit_view ? bvr.edit_view : 'edit';
-    
-    var tmp_bvr = {};
-    tmp_bvr.args = {
-        //'search_type': search_key_info.search_type,
-        //'search_id': search_key_info.id,
-        'search_key': search_key,
-        'input_prefix': 'edit',
-        'view': edit_view
-    };
-
-    tmp_bvr.options = {
-        'title': 'Edit: ' + search_key_info.search_type,
-        'class_name': 'tactic.ui.panel.EditWdg',
-        'popup_id': 'edit_popup'
-    };
-
-    spt.popup.get_widget( evt, tmp_bvr );
+    var code = search_key.split('code=')[1];
+    var id = search_key.split('id=')[1];
+    var st = search_key.split('?')[0];
+    if(st != 'twog/source'){ 
+        var search_key_info = spt.dg_table.parse_search_key( search_key );
+        var edit_view = bvr.edit_view ? bvr.edit_view : 'edit';
+        var tmp_bvr = {};
+        tmp_bvr.args = {
+            //'search_type': search_key_info.search_type,
+            //'search_id': search_key_info.id,
+            'search_key': search_key,
+            'input_prefix': 'edit',
+            'view': edit_view
+        };
+        tmp_bvr.options = {
+            'title': 'Edit: ' + search_key_info.search_type,
+            'class_name': 'tactic.ui.panel.EditWdg',
+            'popup_id': 'edit_popup'
+        };
+        spt.popup.get_widget( evt, tmp_bvr );
+    }else{
+            //HERE NEED TO CLOSE MENU & open popup with checklist at top, EditWdg at bottom - MTM
+            spt.panel.load_popup('Edit Source', 'order_builder.SourceSecurityEditWdg', {'source_code': code, 'source_id': id, 'source_sk': search_key}); 
+            //MTM
+    }
 }
 //
 // Data-row Context Menu: COMMIT all table changes

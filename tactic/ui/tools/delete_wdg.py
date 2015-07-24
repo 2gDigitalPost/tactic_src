@@ -96,10 +96,10 @@ class DeleteToolWdg(BaseRefreshWdg):
             if related_type in ['sthpw/search_object','sthpw/search_type']:
                 continue
 
-            item_div = my.get_item_div(sobjects, related_type)
-            if item_div:
-                items_div.add(item_div)
-                valid_related_ctr += 1
+            #item_div = my.get_item_div(sobject, related_type)                                     #MTM
+            #if item_div:                                                                          #MTM
+            #    items_div.add(item_div)                                                           #MTM
+            #    valid_related_ctr += 1                                                            #MTM
 
 
         
@@ -110,13 +110,13 @@ class DeleteToolWdg(BaseRefreshWdg):
             content.add( icon )
             content.add("<div><b>WARNING: By selecting the related items above, you can delete them as well when deleting this sObject.</b></div>")
             content.add("<br/>"*2)
-        else:
-            # changed the heading to say no dependencies
-            content.add("The item to be deleted has no dependencies.<br/>", 'heading')
+        #else:                                                                                     #MTM
+        #    # changed the heading to say no dependencies                                          #MTM
+        #    content.add("The item to be deleted has no dependencies.<br/>", 'heading')            #MTM
 
 
-        content.add("There are %s items to be deleted" % len(my.search_keys))
-        content.add("<br/>"*2)
+        #content.add("There are %s items to be deleted" % len(my.search_keys)) #MTM
+        #content.add("<br/>"*2) #MTM
 
         content.add("Do you wish to continue deleting?")
         content.add("<br/>"*2)
@@ -142,7 +142,7 @@ class DeleteToolWdg(BaseRefreshWdg):
             'search_keys': bvr.search_keys,
             'values': values
         };
-
+       //MTM THIS MIGHT BE  PROBLEM...
         var del_trigger = function() {
             
             // for fast table
@@ -242,6 +242,7 @@ class DeleteToolWdg(BaseRefreshWdg):
             # leave them unchecked for now to account for user's careless delete behavior
             pass
 
+            #MTM MAKE SURE THIS AUTO-DELETE DOESN'T COME BACK ON FOR 2G - Always Check
             # skip checking login by default to avoid accidental delete
             #if related_type != 'sthpw/login':
             #    checkbox.set_checked()

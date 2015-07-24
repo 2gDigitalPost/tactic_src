@@ -949,8 +949,10 @@ class KeywordFilterElementWdg(BaseFilterElementWdg):
 
         if my.kwargs.get("hint_text"):
             hint_text = my.kwargs.get("hint_text")
-
-        
+        #MTM added this cheap hack
+        if ',' in hint_text and len(hint_text) > 10:
+            hint_text = 'Keywords' 
+        #MTM END
         # search_type is a list matching the column for potential join
         width = my.kwargs.get("width")
         if not width:
@@ -1144,7 +1146,7 @@ class DateFilterElementWdg(BaseFilterElementWdg):
         td.add(op)
         td = table.add_cell()
         op = DivWdg(" between&nbsp;&nbsp;&nbsp;")
-        op.add_style("margin-left: 5px")
+        op.add_style("margin-left: 5px;")
         td.add(op)
 
         from tactic.ui.widget import CalendarInputWdg

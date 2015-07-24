@@ -971,7 +971,7 @@ class TileLayoutWdg(ToolLayoutWdg):
         my.scale_called = True
 
         show_scale = my.kwargs.get("show_scale")
-        print "ST ", my.search_type
+
         div = DivWdg()
         if show_scale in [False, 'false']:
             div.add_style("display: none")

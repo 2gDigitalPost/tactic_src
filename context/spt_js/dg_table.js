@@ -2681,7 +2681,6 @@ spt.dg_table.RemoveColumnCmd = new Class({
 // bvr.src_el - child element of the table_top
 
 spt.dg_table.search_cbk = function(evt, bvr){
-   
     var panel = null;
     if (bvr.panel != null) {
         panel = bvr.panel;
@@ -2774,10 +2773,9 @@ spt.dg_table._search_cbk = function(evt, bvr)
         if (table_top){
             var table = table_top.getElement('.spt_table_content');
             if (table){ 
-                   
+                    //MTM OFF IN FRESH2 var element_names = spt.dg_table.get_element_names(table);
+                    //MTM OFF IN FRESH2 if (element_names)
                    var element_names = version == "2" ? spt.table.get_element_names() :  spt.dg_table.get_element_names(table);
-                   
-              
                    if (element_names)
                         table_top.setAttribute('spt_element_names', element_names);
             }
@@ -2938,6 +2936,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var checkin_type = target.getAttribute("spt_checkin_type");
     var group_elements = target.getAttribute("spt_group_elements");
     var class_name = target.getAttribute("spt_class_name");
+    var height = target.getAttribute("height");
     if (class_name == null) {
         class_name = "tactic.ui.panel.TableLayoutWdg";
     }
@@ -2951,7 +2950,6 @@ spt.dg_table._search_cbk = function(evt, bvr)
     var element_names;
     var column_widths = [];
     var search_keys = [];
-    
     if (version == "2") {
         if (bvr.element_names) {
             element_names = bvr.element_names;
@@ -2964,6 +2962,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
             var size = headers[i].getSize();
             column_widths.push(size.x);
         }
+
         // specify selected search keys (disabling for now)
         //search_keys = spt.table.get_selected_search_keys();
         search_keys = []
@@ -2986,6 +2985,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'group_elements': group_elements,
         'column_widths': column_widths,
         'view': view,
+        'height': height,
         'search_view': search_view,
         'custom_search_view': custom_search_view,
         'do_search': 'true',
@@ -3013,6 +3013,7 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'search_limit_mode': search_limit_mode,
         'search_dialog_id': search_dialog_id,
         'do_initial_search': do_initial_search,
+        'show_shelf': show_shelf,
         'checkin_type': checkin_type,
         'checkin_context': checkin_context,
         'ingest_data_view': ingest_data_view,
@@ -3021,6 +3022,8 @@ spt.dg_table._search_cbk = function(evt, bvr)
         'is_refresh': 'true',
         'search_keys': search_keys,
     }
+    //MTM ADDED SHOW_SHELF. Fixes shelf reappear problem. 
+    //MTM Also added height
 
     var pat = /TileLayoutWdg/;
     if (pat.test(class_name)) {

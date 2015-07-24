@@ -312,7 +312,7 @@ class AccessManager(Base):
             return None
 
 
-        # qualify the key with a project_code 
+        # qualify the key with a project_code
         project_code = "*"
         if isinstance(key, dict):
             # this avoids get_access() behavior changes on calling it twice

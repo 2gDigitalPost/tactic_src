@@ -272,38 +272,38 @@ class Pipeline(SObject):
         # don't do anything for task table
         if search_type =='sthpw/task':
             return
-
-        columns = SearchType.get_columns(search_type)
-        if not 'pipeline_code' in columns:
-            # add the pipeline code column
-            from pyasm.command import ColumnAddCmd
-            cmd = ColumnAddCmd(search_type, "pipeline_code", "varchar")
-            cmd.execute()
-        if ProdSetting.get_value_by_key('autofill_pipeline_code') != 'false':
-            # go through all of the sobjects and set all the empty ones
-            # to the new pipeline
-            search = Search(search_type)
-            search.add_op("begin")
-            search.add_filter("pipeline_code", "NULL", op='is', quoted=False)
-            search.add_filter("pipeline_code", "")
-            search.add_op("or")
-            sobject_ids = search.get_sobject_ids()
-           
-            if sobject_ids:
-                # this is much faster and memory efficient
-                db_resource = SearchType.get_db_resource_by_search_type(search_type)
-                sql = DbContainer.get(db_resource)
-                tbl = search.get_table()
-                sobject_ids = [str(x) for x in sobject_ids]
-                pipeline_code =  my.get_value("code")
-                sql.do_update('''UPDATE "%s" SET "pipeline_code" = '%s' WHERE id in (%s) ''' %(tbl, pipeline_code, ','.join(sobject_ids)))
-            """
-            for sobject in sobjects:    
-                if not sobject.get_value("pipeline_code"):
-                    sobject.set_value("pipeline_code", my.get_value("code") )
-                    sobject.commit(triggers=False)
-            """
-
+# MTM Turned off because I don't want pipelines to be auto-set on anything
+#MTM        columns = SearchType.get_columns(search_type)
+#MTM        if not 'pipeline_code' in columns:
+#MTM            # add the pipeline code column
+#MTM            from pyasm.command import ColumnAddCmd
+#MTM            cmd = ColumnAddCmd(search_type, "pipeline_code", "varchar")
+#MTM            cmd.execute()
+#MTM        if ProdSetting.get_value_by_key('autofill_pipeline_code') != 'false':
+#MTM            # go through all of the sobjects and set all the empty ones
+#MTM            # to the new pipeline
+#MTM            search = Search(search_type)
+#MTM            search.add_op("begin")
+#MTM            search.add_filter("pipeline_code", "NULL", op='is', quoted=False)
+#MTM            search.add_filter("pipeline_code", "")
+#MTM            search.add_op("or")
+#MTM            sobject_ids = search.get_sobject_ids()
+#MTM           
+#MTM            if sobject_ids:
+#MTM                # this is much faster and memory efficient
+#MTM                db_resource = SearchType.get_db_resource_by_search_type(search_type)
+#MTM                sql = DbContainer.get(db_resource)
+#MTM                tbl = search.get_table()
+#MTM                sobject_ids = [str(x) for x in sobject_ids]
+#MTM                pipeline_code =  my.get_value("code")
+#MTM                sql.do_update('''UPDATE "%s" SET "pipeline_code" = '%s' WHERE id in (%s) ''' %(tbl, pipeline_code, ','.join(sobject_ids)))
+#MTM            """
+#MTM            for sobject in sobjects:    
+#MTM                if not sobject.get_value("pipeline_code"):
+#MTM                    sobject.set_value("pipeline_code", my.get_value("code") )
+#MTM                    sobject.commit(triggers=False)
+#MTM            """
+#MTM
     def update_process_table(my):
         ''' make sure to update process table'''
         process_names = my.get_process_names()

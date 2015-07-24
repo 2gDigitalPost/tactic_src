@@ -121,6 +121,7 @@ class SearchWdg(BaseRefreshWdg):
         config.append("<config>\n")
         config.append("<filter>\n")
 
+        #MTM Combination used to be this: <element name='Keyword Search'>
         config.append('''
         <element name='Combination'>
           <display class='tactic.ui.filter.SObjectSearchFilterWdg'>

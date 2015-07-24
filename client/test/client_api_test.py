@@ -757,7 +757,7 @@ class ClientApiTest(unittest.TestCase):
         my.server.upload_file(file_path)
         result = my.server.simple_checkin(search_key, context, file_path, file_type="foo", is_current=False, breadcrumb=True)
 
-        
+
         breadcrumb_file = "%s.snapshot" % file_path
         my.assertEquals( True, os.path.exists(file_path) )
         # remove it
@@ -1049,8 +1049,10 @@ class ClientApiTest(unittest.TestCase):
 
         paths = dep_snapshots[0].get('__paths__')
         web_base_dir = base_dirs.get('web_base_dir')
+
         if isinstance(web_base_dir, dict):
             web_base_dir = web_base_dir.get('default')
+
         for path in paths:
             my.assertEquals(path.startswith('%s/unittest/person/'%web_base_dir), True)
     
@@ -1543,8 +1545,10 @@ class ClientApiTest(unittest.TestCase):
         columns = ['code']
         children = my.server.get_all_children(country_key, child_type, columns=columns)
         child = children[0]
-        # code, __search_type__,  and __search_key__
+
+        # code and __search_type__, and __search_key__
         my.assertEquals(3, len(child.keys() ) )
+        #my.assertEquals(2, len(child.keys() ) )
 
         # test setting parent
         data = { 'code': 'calgary' }

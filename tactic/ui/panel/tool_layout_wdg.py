@@ -34,7 +34,7 @@ class ToolLayoutWdg(FastTableLayoutWdg):
             'type': 'TextWdg',
             'order': 1,
             'category': 'Display'
-        },
+        }
 
 
     } 

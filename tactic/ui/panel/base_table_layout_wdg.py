@@ -904,7 +904,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                         }
                     }
 
-                   
+
 
                     '''
                 } )
@@ -964,7 +964,10 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 elif my.sobjects:
                     my.items_found = len(my.sobjects)
 
-           
+            #THIS WAS BROKEN - IN FRESH3 -- changed to num_div inner.add_attr("total_count", info.get("count"))
+            #THIS WAS ALSO BROKEN BECAUSE THERE IS NO "INFO" - changed to my.kwargs num_div.add_attr("total_count", info.get("count"))
+            num_div.add_attr("total_count", my.kwargs.get("count")) #MTM
+
             if my.items_found == 1:
                 num_div.add( "%s %s" % (my.items_found, _("item found")))
             else:
@@ -1395,6 +1398,30 @@ class BaseTableLayoutWdg(BaseConfigWdg):
             #button = ButtonNewWdg(title='Add New Item (Shift-Click to add in page)', icon=IconWdg.ADD_GRAY)
             button = ButtonNewWdg(title='Add New Item (Shift-Click to add in page)', icon="BS_PLUS")
             button_row_wdg.add(button)
+#            button.add_behavior( {
+#                'type': 'click_up',
+#                'view': insert_view,
+#                'title': search_type_title,
+#                'table_id': my.table_id,
+#                #'cbjs_action': "spt.dg_table.add_item_cbk(evt, bvr)"
+#                'cbjs_action': '''
+#                var top = bvr.src_el.getParent(".spt_table_top");
+#                var table = top.getElement(".spt_table");
+#                var search_type = top.getAttribute("spt_search_type")
+#                var kwargs = {
+#                  search_type: search_type,
+#                  parent_key: '%s',
+#                  view: bvr.view,
+#                  mode: 'insert',
+#                  //num_columns: 2,
+#                  save_event: 'search_table_' + bvr.table_id,
+#                  show_header: false,
+#                };
+#                spt.panel.load_popup('Add Item to ' + bvr.title, 'tactic.ui.panel.EditWdg', kwargs);
+#                '''%my.parent_key
+#
+#            } )
+            #MTM Much if this has been altered
             button.add_behavior( {
                 'type': 'click_up',
                 'view': insert_view,
@@ -1405,6 +1432,18 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                 var top = bvr.src_el.getParent(".spt_table_top");
                 var table = top.getElement(".spt_table");
                 var search_type = top.getAttribute("spt_search_type")
+                var defaul = {};
+                check_high_security = false;
+                if(search_type == 'twog/source'){
+                    var server = TacticServerStub.get();
+                    var last_bc_expr = "@SOBJECT(twog/barcode['name','The only entry'])";
+                    var last_bc = server.eval(last_bc_expr)[0];
+                    var last_num = Number(last_bc.number);
+                    var new_num = last_num + 1;
+                    server.update(last_bc.__search_key__, {'number': new_num});
+                    defaul = {'barcode': '2GV' + new_num};
+                    check_high_security = true;
+                } 
                 var kwargs = {
                   search_type: search_type,
                   parent_key: '%s',
@@ -1414,10 +1453,26 @@ class BaseTableLayoutWdg(BaseConfigWdg):
                   save_event: 'search_table_' + bvr.table_id,
                   show_header: false,
                 };
-                spt.panel.load_popup('Add Item to ' + bvr.title, 'tactic.ui.panel.EditWdg', kwargs);
+                if(search_type == "twog/order"){
+                    //kwargs['cbjs_insert_path'] = 'builder/test_path'; 
+                    defaul['pipeline_code'] = 'twog/order';
+                }
+                if(search_type == "twog/movement"){
+                    defaul['arrivals_email'] = true;
+                }
+                if(defaul != '' && defaul != {}){
+                    kwargs['default'] = defaul;
+                }
+                if(!check_high_security){
+                    spt.panel.load_popup('Add Single Item', 'tactic.ui.panel.EditWdg', kwargs);
+                }else{
+                    kwargs['cbjs_insert_path'] = 'builder/check_high_security';
+                    spt.panel.load_popup('Add Source', 'tactic.ui.panel.EditWdg', kwargs);
+                }
                 '''%my.parent_key
 
             } )
+            #MTM Much if this (above) has been altered
 
 
 
@@ -2444,6 +2499,7 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
     def get_data_row_smart_context_menu_details(my):
         spec_list = [ { "type": "title", "label": 'Item "{display_label}"' }]
+        security = Environment.get_security() #MTM Moved up Here
         if my.view_editable:
             edit_view = my.kwargs.get("edit_view")
             
@@ -2770,7 +2826,6 @@ class BaseTableLayoutWdg(BaseConfigWdg):
 
 
 
-        security = Environment.get_security()
         if security.check_access("builtin", "retire_delete", "allow"):
         
             spec_list.extend( [{ "type": "separator" },

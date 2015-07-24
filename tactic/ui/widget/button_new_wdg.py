@@ -10,7 +10,7 @@
 #
 #
 
-__all__ = ['ButtonRowWdg', 'ButtonNewWdg', 'ActionButtonWdg', 'IconButtonWdg', 'IconButtonElementWdg', 'SingleButtonWdg']
+__all__ = ['ButtonRowWdg', 'ButtonNewWdg','ButtonSmallNewWdg', 'ActionButtonWdg', 'IconButtonWdg', 'IconButtonElementWdg', 'SingleButtonWdg']
 
 import os
 
@@ -773,6 +773,498 @@ class ButtonNewWdg(BaseRefreshWdg):
  
 
 
+class ButtonSmallNewWdg(BaseRefreshWdg): # MTM ADDED THIS CLASS
+
+    def get_args_keys(my):
+        return {
+        'tip': 'The tool tip of the button',
+        'title': 'The title of the button',
+        'show_menu': 'True|False - determines whether or not to show the menu',
+        'show_title': 'True|False - determines whether or not to show the title',
+        }
+
+    def init(my):
+        #my.inner = DivWdg()
+        my.dialog = None
+        my.button = DivWdg()
+        my.hit_wdg = DivWdg()
+        my.arrow_div = DivWdg()
+        my.arrow_menu = IconButtonWdg(title="More Options", icon=IconWdg.ARROWHEAD_DARK_DOWN)
+
+        my.show_arrow_menu = False
+        # for icon decoration
+        my.icon_div = DivWdg()
+
+        my.is_disabled = my.kwargs.get("is_disabled") in [True,"true"]
+
+
+    def add_style(my, name, value=None):
+        my.top.add_style(name, value)
+
+    def add_behavior(my, behavior):
+        my.hit_wdg.add_behavior(behavior)
+
+    def add_class(my, class_name):
+        my.hit_wdg.add_class(class_name)
+
+    def set_attr(my, attr, name):
+        my.hit_wdg.set_attr(attr, name)
+
+
+    
+
+    def add_arrow_behavior(my, behavior):
+        my.arrow_menu.add_behavior(behavior)
+        my.show_arrow_menu = True
+
+    def set_show_arrow_menu(my, flag):
+        my.show_arrow_menu = flag
+
+    def get_arrow_wdg(my):
+        return my.arrow_menu
+
+    def get_show_arrow_menu(my):
+        return my.show_arrow_menu
+
+    def set_show_title(my, flag):
+        my.kwargs['show_title' ] = flag
+
+    def add_dialog(my, dialog):
+        my.dialog = dialog
+
+
+    def get_button_wdg(my):
+        return my.hit_wdg
+
+    def get_icon_wdg(my):
+        return my.icon_div
+
+
+    def get_display(my):
+
+        top = my.top
+        top.add_style("white-space: nowrap")
+        #top.add_style("position: relative")
+
+        base = "%s/%s" % (BASE, my.top.get_theme() )
+
+
+        show_menu = my.kwargs.get("show_menu")
+        is_disabled = my.kwargs.get("is_disabled")
+
+        button = DivWdg()
+        button.add_style("float: left")
+        
+        my.inner = button
+        top.add(button)
+        my.inner.add_class("hand")
+
+        button.add_class("spt_button_top")
+        button.add_style("position: relative")
+
+        #img = "<img src='%s/MainButtonSlices_button.png'/>" % base
+        #img_div = DivWdg(img)
+        #button.add(img_div)
+        #img_div.add_style("opacity", ALPHA)
+
+        img_div = DivWdg()
+        button.add(img_div)
+        #img_div.add_style("width: 30px")
+        #img_div.add_style("height: 35px")
+        img_div.add_style("width: 20px")
+        img_div.add_style("height: 20px")
+       
+       
+
+        over_div = DivWdg()
+        button.add(over_div)
+        over_div.add_class("spt_button_over")
+        #over_img = "<img src='%s/MainButton_over.png'/>" % base
+        over_img = "<img src='%s/SmallButton_over.png'/>" % base
+        over_div.add(over_img)
+        over_div.add_style("position: absolute")
+        #over_div.add_style("top: 0px")
+        #over_div.add_style("left: 0px")
+        over_div.add_style("top: -7px")
+        over_div.add_style("left: -2px")
+        over_div.add_style("display: none")
+
+        click_div = DivWdg()
+    
+        button.add(click_div)
+        click_div.add_class("spt_button_click")
+        #click_img = "<img src='%s/MainButton_click.png'/>" % base
+        click_img = "<img src='%s/SmallButton_click.png'/>" % base
+        click_div.add(click_img)
+        click_div.add_style("position: absolute")
+        click_div.add_style("top: -7px")
+        click_div.add_style("left: -2px")
+        click_div.add_style("display: none")
+
+
+        title = my.kwargs.get("title")
+       
+        tip = my.kwargs.get("tip")
+        if not tip:
+            tip = title
+
+        icon_div = my.icon_div
+        button.add(icon_div)
+        #icon_div.add_class("spt_button_click")
+        icon_str = my.kwargs.get("icon")
+        icon = IconWdg(tip, icon_str, right_margin=0)
+        icon.add_class("spt_button_icon")
+        icon_div.add(icon)
+        icon_div.add_style("position: absolute")
+        #icon_div.add_style("top: 12px")
+        #icon_div.add_style("left: 6px")
+        icon_div.add_style("top: 2px")
+        icon_div.add_style("left: 2px")
+
+        if my.is_disabled:
+            icon_div.add_style("opacity: 0.5")
+        
+
+        my.icon_div = icon_div
+        
+       
+
+        my.show_arrow = my.kwargs.get("show_arrow") in [True, 'true']
+        if my.show_arrow or my.dialog:
+            arrow_div = DivWdg()
+            button.add(arrow_div)
+            arrow_div.add_style("position: absolute")
+            arrow_div.add_style("top: 24px")
+            arrow_div.add_style("left: 20px")
+
+            arrow = IconWdg(tip, IconWdg.ARROW_MORE_INFO)
+            arrow_div.add(arrow)
+
+
+        web = WebContainer.get_web()
+        is_IE = web.is_IE()
+
+        #my.hit_wdg.add_style("height: 100%")
+        my.hit_wdg.add_style("width: 100%")
+        if is_IE:
+            my.hit_wdg.add_style("filter: alpha(opacity=0)")
+            my.hit_wdg.add_style("height: 40px")
+        else:
+            my.hit_wdg.add_style("height: 100%")
+            my.hit_wdg.add_style("opacity: 0.0")
+
+        if my.is_disabled:
+            my.hit_wdg.add_style("display: none")
+
+        button.add(my.hit_wdg)
+
+
+        my.hit_wdg.add_style("position: absolute")
+        my.hit_wdg.add_style("top: 0px")
+        my.hit_wdg.add_style("left: 0px")
+        #my.hit_wdg.add_style("background: #FFF")
+        my.hit_wdg.add_attr("title", tip)
+        #my.hit_wdg.add_style("display: none")
+        #my.hit_wdg.add_styles('''filter: alpha(opacity=0); -moz-opacity: 0; opacity: 0''')
+        my.hit_wdg.add_behavior( {
+        'type': 'hover',
+        'cbjs_action_over': '''
+            var top = bvr.src_el.getParent(".spt_button_top")
+            var over = top.getElement(".spt_button_over");
+            var click = top.getElement(".spt_button_click");
+            over.setStyle("display", "");
+            click.setStyle("display", "none");
+        ''',
+        'cbjs_action_out': '''
+            var top = bvr.src_el.getParent(".spt_button_top")
+            var over = top.getElement(".spt_button_over");
+            var click = top.getElement(".spt_button_click");
+            over.setStyle("display", "none");
+            click.setStyle("display", "none");
+        '''
+        } )
+        
+        my.hit_wdg.add_behavior( {
+        'type': 'click',
+        'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_button_top")
+            var over = top.getElement(".spt_button_over");
+            var click = top.getElement(".spt_button_click");
+            over.setStyle("display", "none");
+            click.setStyle("display", "");
+        '''
+        } )
+        my.hit_wdg.add_behavior( {
+        'type': 'click_up',
+        'cbjs_action': '''
+            var top = bvr.src_el.getParent(".spt_button_top")
+            var over = top.getElement(".spt_button_over");
+            var click = top.getElement(".spt_button_click");
+            over.setStyle("display", "");
+            click.setStyle("display", "none");
+        '''
+        } )
+
+
+
+        # add a second arrow widget
+        if my.show_arrow_menu:
+            my.inner.add(my.arrow_div)
+            my.arrow_div.add_attr("title", "More Options")
+            my.arrow_div.add_style("position: absolute")
+            my.arrow_div.add_style("top: 11px")
+            my.arrow_div.add_style("left: 20px")
+            my.arrow_div.add(my.arrow_menu)
+
+
+
+
+
+
+        if my.dialog:
+            top.add(my.dialog)
+            dialog_id = my.dialog.get_id()
+            my.hit_wdg.add_behavior( {
+            'type': 'click_up',
+            'dialog_id': dialog_id,
+            'cbjs_action': '''
+            var dialog = $(bvr.dialog_id);
+            var pos = bvr.src_el.getPosition();
+            var size = bvr.src_el.getSize();
+            //var dialog = $(bvr.dialog_id);
+            dialog.setStyle("left", pos.x);
+            dialog.setStyle("top", pos.y+size.y);
+            spt.toggle_show_hide(dialog);
+
+            '''
+            } )
+
+
+
+
+        return top
+
+
+
+
+    def get_displayxx(my):
+
+        show_menu = my.kwargs.get("show_menu")
+        is_disabled = my.kwargs.get("is_disabled")
+
+        show_title = my.kwargs.get("show_title")
+        show_title = show_title in ['True', True]
+
+        width = 35 
+        if show_title:
+            height = 26
+        else:
+            height = 20
+        height = 30
+
+        top = my.top
+        top.add_class("spt_button_top")
+        top.add_style("overflow: hidden")
+
+
+        #border = top.get_color("border")
+        #top.add_border(-20)
+        top.add_gradient("background", "background", 20, -35)
+        top.add_style("border-width: 1px 0 1px 0")
+        top.add_style("border-style: solid")
+        top.add_style("border-color: %s" % top.get_color('border'))
+        #top.add_style("margin-left: -1px")
+
+        inner = my.inner
+        top.add(inner)
+        inner.add_color("color", "color3")
+        inner.add_style("padding-top: 3px")
+        inner.add_style("overflow: hidden")
+
+        title = my.kwargs.get("title")
+
+        inner.add_class("hand")
+        inner.add_style("z-index: 20")
+        #inner.add_style("overflow: hidden")
+        #inner.add_style("opacity: 0.5")
+        inner.add_attr("title", title)
+
+        my.button.add_style("margin-top: 5px")
+        inner.add(my.button)
+        icon_str = my.kwargs.get("icon")
+        icon = IconWdg(title, icon_str)
+        my.button.add(icon)
+        icon.add_class("spt_button_icon")
+
+        my.show_arrow = my.kwargs.get("show_arrow") in [True, 'true']
+        if my.show_arrow or my.dialog:
+            arrow = IconWdg(title, IconWdg.ARROW_MORE_INFO)
+            inner.add(arrow)
+            arrow.add_style("position: absolute")
+            arrow.add_style("float: left")
+            arrow.add_style("margin-left: 2px")
+            arrow.add_style("margin-top: -10px")
+
+
+
+
+        inner.add_style("font-size: 8px")
+        inner.add_style("height: %spx" % height)
+        inner.add_style("width: %spx" % width)
+        inner.add_style("text-align: center")
+
+        show_title = False
+        if show_title:
+            title_div = DivWdg()
+            title_div.add(title)
+            inner.add(title_div)
+
+
+
+        inner.add_behavior( {
+        'type': 'click',
+        'width': width,
+        'cbjs_action': '''
+            var button = bvr.src_el;
+            button.setStyle("border-style", "ridge");
+            button.setStyle("width", bvr.width-2);
+        '''
+        } )
+
+
+        inner.add_behavior( {
+        'type': 'click_up',
+        'width': width,
+        'cbjs_action': '''
+            var button = bvr.src_el;
+            button.setStyle("border-style", "none");
+            button.setStyle("width", bvr.width);
+        '''
+        } )
+
+
+        inner.add_behavior( {
+        'type': 'hover',
+        'width': width,
+        'cbjs_action_over': '''
+            var button = bvr.src_el;
+            var icon = button.getElement(".spt_button_icon");
+            icon.setStyle('opacity', '1');
+        ''',
+        'cbjs_action_out': '''
+            var button = bvr.src_el;
+            button.setStyle("border-style", "none");
+            var icon = button.getElement(".spt_button_icon");
+            icon.setStyle('opacity', '0.5');
+
+            button.setStyle("width", bvr.width);
+
+        '''
+ 
+        } )
+
+
+        if show_menu in ['true', True]:
+            inner.add_style("float: left")
+            arrow_div = DivWdg()
+            top.add(arrow_div)
+            arrow_div.add_style("opacity: 0.5")
+            arrow_div.add_style("z-index: 100")
+            arrow_div.add_style("height: %spx" % height)
+            arrow_div.add_style("border-left: dotted 1px %s" % arrow_div.get_color("border") )
+            #arrow_div.add_style("margin-left: -15px")
+            arrow_div.add_style("float: left")
+
+            arrow = DivWdg(IconWdg("More Options", IconWdg.ARROW_MORE_INFO))
+            arrow.add_style("margin-top: 8px")
+            arrow_div.add(arrow)
+            arrow_div.add_style("position: relative")
+
+
+            arrow_div.add_behavior( {
+            'type': 'hover',
+            'cbjs_action_over': '''
+                var button = bvr.src_el;
+                var height = parseInt(button.getStyle("height").replace("px",""));
+                var width = parseInt(button.getStyle("width").replace("px",""));
+                button.setStyle('opacity', '1');
+                button.setStyle('border', 'solid 1px red');
+                button.setStyle("height", height-2);
+                button.setStyle("width", width-2);
+            ''',
+            'cbjs_action_out': '''
+                var button = bvr.src_el;
+
+                var height = parseInt(button.getStyle("height").replace("px",""));
+                var width = parseInt(button.getStyle("width").replace("px",""));
+
+                button.setStyle('opacity', '0.5');
+                button.setStyle('border', '');
+                button.setStyle("height", height+2);
+                button.setStyle("width", width+2);
+            '''
+     
+            } )
+
+            my.add_menu_wdg(arrow_div)
+
+
+
+        if is_disabled in ['true', True]:
+            disabled_div = DivWdg()
+            disabled_div.add_class("spt_save_button_disabled")
+            disabled_div.set_attr("title", "%s (Disabled)" % title)
+            disabled_div.add_style("position: relative")
+            disabled_div.add_style("height: %spx" % (height+3))
+            disabled_div.add_style("width: %spx" % width)
+            #disabled_div.add_style("margin-left: -%spx" % width)
+            disabled_div.add_style("margin-top: -%spx" % (height+3))
+            disabled_div.add_style("opacity", "0.6")
+            disabled_div.add_style("background", "#AAA")
+            inner.add_style("opacity", "1")
+            top.add(disabled_div)
+
+
+
+        if my.dialog:
+            top.add(my.dialog)
+            dialog_id = my.dialog.get_id()
+            inner.add_behavior( {
+            'type': 'load',
+            'height': height,
+            'dialog_id': dialog_id,
+            'cbjs_action': '''
+            var pos = bvr.src_el.getPosition();
+            var el = $(bvr.dialog_id);
+            el.setStyle("left", pos.x);
+            el.setStyle("top", pos.y+bvr.height+13);
+            '''
+            } )
+
+            my.inner.add_behavior( {
+            'type': 'click_up',
+            'dialog_id': dialog_id,
+            'cbjs_action': '''
+            var dialog = $(bvr.dialog_id);
+            spt.toggle_show_hide(dialog);
+            '''
+            } )
+
+
+        return top
+
+
+
+    def add_menu_wdg(my, button, menus):
+
+        from tactic.ui.container import SmartMenu
+
+        my.menus = []
+        my.menus.append(menu.get_data())
+
+        smenu_set = SmartMenu.add_smart_menu_set( button, { 'BUTTON_MENU': my.menus } )
+        SmartMenu.assign_as_local_activator( button, "BUTTON_MENU", True )
+ 
 
 
 

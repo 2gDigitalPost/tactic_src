@@ -1353,7 +1353,7 @@ spt.task_element.status_change_cbk = function(evt, bvr) {
         div.add_style('width', '%spx'%panel_width)
         div.add_class("spt_task_top")
         div.add_style("float: left")
-        div.add_style("white-space: nowrap")
+        div.add_style("white-space: nowrap") #MTM used to say "wrap"
 
         # make it into a table
         table = Table()

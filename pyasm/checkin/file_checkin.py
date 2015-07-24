@@ -38,7 +38,7 @@ class FileCheckin(BaseCheckin):
             level_type=None, level_id=None, mode=None, keep_file_name=False,
             base_dir=None, is_revision=False, md5s=[], file_sizes=[],
             dir_naming=None, file_naming=None, context_index_padding=None,
-            checkin_type='', version=None, single_snapshot=False):
+            checkin_type='', version=None, single_snapshot=False, triggers='true'):
 
         '''sobject - the sobject that this checkin belongs to
            file_paths - array of all the files to checkin
@@ -75,6 +75,7 @@ class FileCheckin(BaseCheckin):
                 auto uses looser naming conventions with auto versionless
            version - force the version of the check-in
            single_snapshot - if set to True, it raises a SingleSnapshotException if an existing snapshot already exists.
+           triggers - either 'true' or 'false' - defaults to 'true' - should keep other triggers from going off  -- MTM
             
         '''
         super(FileCheckin,my).__init__(sobject)
@@ -233,6 +234,12 @@ class FileCheckin(BaseCheckin):
         my.file_sizes = file_sizes
         
         my.single_snapshot = single_snapshot
+        #MTM CREATED THIS PART
+        my.triggers = True
+        if 'triggers' in my.kwargs.keys():
+            if my.kwargs.get('triggers') == 'false':
+                my.triggers = False
+        #MTM END
 
 
 
@@ -546,8 +553,10 @@ class FileCheckin(BaseCheckin):
         # Call the checkin/move pipeline event
         #event_caller = PipelineEventCaller(my, "checkin/move")
         #event_caller.run()
-        trigger = PipelineEventTrigger()
-        Trigger.append_trigger(my, trigger, "checkin/move")
+        #MTM ADDED THE CONDITIONAL
+        if my.triggers:
+            trigger = PipelineEventTrigger()
+            Trigger.append_trigger(my, trigger, "checkin/move")
 
 
 

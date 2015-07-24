@@ -36,6 +36,8 @@ class PageHeaderWdg(Widget):
             my.show_project = False
         else:
             my.show_project = True
+        my.security = Environment.get_security() #MTM
+        my.login_groups = my.security.get_group_names() #MTM
       
 
 
@@ -47,14 +49,16 @@ class PageHeaderWdg(Widget):
         tactic_header = Table()
         tactic_header.add_row()
         tactic_header.add_color("color", "color2")
+        tactic_header.add_style('background-color: #000000;') #MTM
 
 
         # tactic logo and release info
         #skin = web.get_skin()
-        #src = '/context/skins/' + skin + '/images/tactic_logo.png'
-        src = '/context/tactic_logo.png'
+        #src = '/context/skins/' + skin + '/images/tactic_logo.png'  # MTM THIS IS THE OLD WAY
+        src = '/context/icons/custom/strat2g_short.jpg' # MTM THIS IS THE NEW WAY
         img = HtmlElement.img(src)
         img.add_class('hand')
+        img.add_style('width: 100px;') # MTM ADDED THIS
         img.add_attr('title', 'Go to home page')
         img.add_behavior({'type': 'click_up', 'cbjs_action': "window.location='/tactic/'"})
 
@@ -63,25 +67,29 @@ class PageHeaderWdg(Widget):
         rel_div.add("Release: %s" %Environment.get_release_version() )
         rel_div.add_style("font-size: 9px")
         # Need this to override the above color in add_looks
-        rel_div.add_color("color", "color2")
+        rel_div.add_color("color", "color4") #MTM - color4 used to be color2
+        rel_div.add_attr('align','center') # MTM
 
         tactic_wdg = Table()
 
         tactic_wdg.add_style("width: 180px")
         tactic_wdg.add_row()
         td = tactic_wdg.add_cell( img )
+        td.add_attr('align','center') # MTM
         td.set_style("width:100px")
         tactic_wdg.add_row()
         td = tactic_wdg.add_cell( rel_div )
-        td.set_style("text-align: left") 
+        #td.set_style("text-align: left") 
+        td.set_style("text-align: center") # MTM 
 
         td = tactic_header.add_cell( tactic_wdg )
        
         # add the project thumb and title
         project = Project.get()
 
-        if my.show_project:
+        if my.show_project and 'client' not in my.login_groups: #MTM added client logic
             thumb_div = DivWdg()
+            thumb_div.add_style('display: none;')
             td = tactic_header.add_cell( thumb_div )
             thumb_div.add_style("height: 28px")
             thumb_div.add_style("overflow: hidden")
@@ -125,13 +133,24 @@ class PageHeaderWdg(Widget):
                 from message_wdg import SubscriptionBarWdg
                 sub = SubscriptionBarWdg(mode='popup')
                 tactic_header.add_cell(sub)
+            #MTM added link in top bar to the asset tracker 
+            tracker_cell = tactic_header.add_cell('<img src="/context/icons/custom/BarcodeSmall.png" />')
+            tracker_cell.add_style('cursor: pointer;')
+            tracker_cell.add_behavior({  
+                'type': 'click_up',
+                'cbjs_action': '''
+                    spt.panel.load_popup('Physical Asset Tracker', 'asset_tracker.asset_tracker.AssetTrackerWdg', {});
+                '''
+                })
 
         # user login
 
         # user
         user = Environment.get_login()
+        user_name = user.get_login() # MTM
         full_name = user.get_full_name()
-        user_div = SpanWdg( HtmlElement.b( "%s&nbsp;&nbsp;" % full_name) , css='hand')       
+        user_div = SpanWdg( HtmlElement.b( "<font color='#FFFFFF'>%s&nbsp;&nbsp;</font>" % full_name) , css='hand') #MTM       
+        #user_div = SpanWdg( HtmlElement.b( "%s&nbsp;&nbsp;" % full_name) , css='hand')       
         user_div.set_style("padding-right:10px")
 
         # signout
@@ -144,6 +163,42 @@ class PageHeaderWdg(Widget):
         td = tactic_header.add_cell(span)       
         td.set_style("width:100%; text-align:right; white-space: nowrap")
 
+        if 'client' not in my.login_groups: # MTM down to unindent (existed, just shifted)
+            lgs = Search("sthpw/login")
+            lgs.add_filter('login',user_name)
+            lgs.add_filter('location','internal')
+            login_obj = lgs.get_sobject()
+            login_sk = login_obj.get_search_key()
+            active_dept = login_obj.get_value('active_department')
+            dept_sel = SelectWdg('active_dept_selector')            
+            disp_depts = []
+            add_count = 0
+            for dept in my.login_groups:
+                if dept not in ['user','client','default','executives','management','it','office employees','admin','scheduling','senior_staff','streamz','technical services']:
+                    if active_dept in [None,'']:
+                        active_dept = dept  
+                    new_dept = dept.replace(' supervisor','')
+                    if new_dept not in disp_depts:
+                        disp_depts.append(new_dept)
+                        add_count = add_count + 1
+            if add_count > 0:
+                disp_depts.sort()
+                for dd in disp_depts:
+                    dept_sel.append_option(dd.upper(), dd)
+                dept_sel.set_value(active_dept)
+                dept_sel.add_behavior({            
+                'type': 'change',
+                'cbjs_action': '''
+                    login_sk = '%s';
+                    new_dept = bvr.src_el.value;
+                    server = TacticServerStub.get();
+                    server.update(login_sk, {'active_department': new_dept});
+                ''' % login_sk
+                })
+                dept_sel.add_style('width: 200px;')
+                td0 = tactic_header.add_cell(dept_sel)
+                #td0.set_style("width:100%; text-align:right; white-space: nowrap")
+                td0.set_style("text-align:right; white-space: nowrap")
 
 
         from tactic.ui.widget import SingleButtonWdg
@@ -167,43 +222,48 @@ class PageHeaderWdg(Widget):
    
 
 
-        td.set_style("width:100%;")
-        button = SingleButtonWdg(title='Help', icon=IconWdg.HELP_BUTTON, show_arrow=False)
-        #button.add_behavior( {
-        #'type': 'click_up',
-        #'cbjs_action': '''
-        #window.open("/doc/")
-        #'''
-        #} )
+        #td.set_style("width:100%;")
+        #td.set_style("width:100%; text-align:right; white-space: nowrap")
+        td.set_style("text-align:right; white-space: nowrap")
+        if 'client' not in my.login_groups: # MTM down to unindent (existed, just shifted - except for removal of help button and addition of ticketing button)
+#            button = SingleButtonWdg(title='Help', icon=IconWdg.HELP_BUTTON, show_arrow=False)
+#            #button.add_behavior( {
+#            #'type': 'click_up',
+#            #'cbjs_action': '''
+#            #window.open("/doc/")
+#            #'''
+#            #} )
+#    
+#            button.add_behavior( {
+#            'type': 'click_up',
+#            'cbjs_action': '''
+#            spt.named_events.fire_event("show_help")
+#            '''
+#            } )
+            from ticketing import TicketingLauncherWdg
+            button = TicketingLauncherWdg()
 
-        button.add_behavior( {
-        'type': 'click_up',
-        'cbjs_action': '''
-        spt.named_events.fire_event("show_help")
-        '''
-        } )
-
-
-        from tactic.ui.container import DialogWdg
-        help_dialog = DialogWdg(z_index=900, show_pointer=False)
-        td.add(help_dialog)
-        help_dialog.add_title("Help")
-        help_dialog.add_class("spt_help")
-
-
-        # container for help
-        help_div = DivWdg()
-        help_dialog.add(help_div)
-
-        from help_wdg import HelpWdg
-        help_wdg = HelpWdg()
-        help_div.add(help_wdg)
-
-
-        button_div = DivWdg(button)
-        button_div.add_style("margin-top: -5px")
+#            from tactic.ui.container import DialogWdg
+#            help_dialog = DialogWdg(z_index=900, show_pointer=False)
+#            td.add(help_dialog)
+#            help_dialog.add_title("Help")
+#            help_dialog.add_class("spt_help")
+#    
+#    
+#            # container for help
+#            help_div = DivWdg()
+#            help_dialog.add(help_div)
+#    
+#            from help_wdg import HelpWdg
+#            help_wdg = HelpWdg()
+#            help_div.add(help_wdg)
+    
+    
+            button_div = DivWdg(button)
+            button_div.add_style("margin-top: -5px")
         td = tactic_header.add_cell(button_div)
-        td.set_style("width:100%; text-align:right; white-space: nowrap")
+        #td.set_style("width:100%; text-align:right; white-space: nowrap")
+        td.set_style("text-align:right; white-space: nowrap")
 
 
         # Layout the Main Header Table
@@ -264,6 +324,32 @@ class PageHeaderWdg(Widget):
 
         menu_data.append( {
             "type": "action",
+            "label": "My Preferences",
+            "bvr_cb": { 
+                'cbjs_action': '''
+                 kwargs = {};
+                 spt.panel.load_popup("My Preferences", 'preferences.MyPreferencesWdg', kwargs);
+                ''' 
+            }
+        } )
+
+        menu_data.append( { 'type': 'separator' } )
+
+        menu_data.append( {
+            "type": "action",
+            "label": "Object Clipboard",
+            "bvr_cb": {
+                'cbjs_action': '''
+                 kwargs = {};
+                 spt.panel.load_popup("Object Clipboard", 'clipboard.ClipboardWdg', kwargs);
+                ''' 
+            }
+        } )
+
+        menu_data.append( { 'type': 'separator' } )
+
+        menu_data.append( {
+            "type": "action",
             "label": "Edit My Account",
             "bvr_cb": {
                 'cbjs_action': '''
@@ -282,7 +368,7 @@ class PageHeaderWdg(Widget):
         } )
 
         menu_data.append( { 'type': 'separator' } )
-
+# THIS IS THE MTM WAY, SINCE THE ORIGINAL FROM TACTIC DID NOT WORK.
         menu_data.append( {
             "type": "action",
             "label": "Sign Out",
@@ -291,17 +377,41 @@ class PageHeaderWdg(Widget):
                  var ok = function(){
                  var server = TacticServerStub.get();
                     var login = spt.Environment.get().get_user();
-                    server.execute_cmd("SignOutCmd", {login: login} );
-                    //var href = document.location.href;
-                    //var parts = href.split("#");
+                    server.execute_cmd("SignOutCmd", {login: login} );//MTM
+                    var href = document.location.href;//MTM
+                    var parts = href.split("#"); //MTM
                     //window.location.href=parts[0];
-                    document.location = "/";
+                    document.location = "/tactic/twog";
+                    //MTM - THIS GOES TO HELLO WORLDserver.execute_cmd("SignOutCmd", {login: login} );
+                    ////var href = document.location.href;
+                    ////var parts = href.split("#");
+                    ////window.location.href=parts[0];
+                    //MTM END - document.location = "/";
                     }
                  spt.confirm("Are you sure you wish to sign out?", ok )
                 ''' 
             } 
         } )
- 
+#THIS IS THE STHPW WAY - WILL PROBABLY WANT TO TURN BACK THE OLD CODE ON, BUT ON FOR TESTING NOW...
+# 
+#        menu_data.append( {
+#            "type": "action",
+#            "label": "Sign Out",
+#            "bvr_cb": {
+#                'cbjs_action': '''
+#                 var ok = function(){
+#                 var server = TacticServerStub.get();
+#                    var login = spt.Environment.get().get_user();
+#                    server.execute_cmd("SignOutCmd", {login: login} );
+#                    //var href = document.location.href;
+#                    //var parts = href.split("#");
+#                    //window.location.href=parts[0];
+#                    document.location = "/";
+#                    }
+#                 spt.confirm("Are you sure you wish to sign out?", ok )
+#                ''' 
+#            } 
+#        } )
 
         return { 'menu_tag_suffix': 'MAIN', 'width': 120 , 'opt_spec_list': menu_data, 'allow_icons': False }
 

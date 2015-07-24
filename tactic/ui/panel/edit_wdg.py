@@ -96,8 +96,10 @@ class EditWdg(BaseRefreshWdg):
 
         "default": "default data in a JSON or dictionary form to be used for new entry",
         "single": "when in insert mode, determine if only one entry can be inserted",
-        "ignore": "A list of element names to ignore"
+        "ignore": "A list of element names to ignore",
+        "make_uneditable": "true|false - defaults to false"
         }
+        #MTM added make_uneditable, scroll_height
 
 
     def init(my):
@@ -354,6 +356,36 @@ class EditWdg(BaseRefreshWdg):
             description = my.element_descriptions[i]
             widget.add_attr("title", description)
 
+    def get_on_load(my):
+        behavior = {
+                'type': 'load',
+                'cbjs_action': '''
+                    var top_el = spt.api.get_parent(bvr.src_el, '.SPT_BVR');
+                    inputs = top_el.getElementsByClassName('spt_input');
+                    for(var r = 0; r < inputs.length; r++){
+                        if(inputs[r].type == 'checkbox'){
+                            inputs[r].onclick = 'return false';
+                            inputs[r].onkeydown = 'return false';
+                            inputs[r].setAttribute('readonly','readonly');
+                            inputs[r].setAttribute('disabled','disabled');
+                        }else if(inputs[r].type == 'text'){
+                            inputs[r].setAttribute('readonly','readonly');
+                        }else{
+                            inputs[r].setAttribute('disabled','disabled');
+                        }
+                    }
+                    inputs = top_el.getElementsByClassName('spt_calendar_input');
+                    for(var r = 0; r < inputs.length; r++){
+                        inputs[r].setAttribute('readonly','readonly');
+                        inputs[r].setAttribute('disabled','disabled');
+                    }
+                    inputs = top_el.getElementsByClassName('glyphicon');
+                    for(var r = 0; r < inputs.length; r++){
+                        inputs[r].display = 'none';
+                    }
+                '''
+        }
+        return behavior
 
 
 
@@ -418,6 +450,14 @@ class EditWdg(BaseRefreshWdg):
         content_div.add_class("spt_edit_top")
         content_div.add_class("spt_edit_form_top")
         content_div.set_attr("spt_search_key", my.search_key)
+        if 'scroll_height' in my.kwargs.keys():
+            scroll_height = my.kwargs.get('scroll_height')
+            content_div.add_style('overflow-y: scroll;')
+            content_div.add_style('height: %s;' % scroll_height)
+        if 'make_uneditable' in my.kwargs.keys():
+            make_uneditable = my.kwargs.get('make_uneditable')
+            if make_uneditable in ['True','true']:
+                content_div.add_behavior(my.get_on_load())
 
         if not Container.get_dict("JSLibraries", "spt_edit"):
             content_div.add_behavior( {
@@ -527,6 +567,7 @@ class EditWdg(BaseRefreshWdg):
         tr = table.add_row()
 
 
+        from pyasm.widget import TextAreaWdg, CheckboxWdg, SelectWdg, TextWdg
         show_header = my.kwargs.get("show_header")
         if show_header not in ['false', False]:
             my.add_header(table, sobj_title)
@@ -597,7 +638,6 @@ class EditWdg(BaseRefreshWdg):
             # Bootstrap
             widget.add_class("form-control")
 
-            from pyasm.widget import TextAreaWdg, CheckboxWdg, SelectWdg, TextWdg
             if not isinstance(widget, CheckboxWdg):
                 widget.add_style("width: 100%")
 

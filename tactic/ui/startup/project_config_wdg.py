@@ -904,7 +904,6 @@ class UserPanelWdg(BaseRefreshWdg):
             ''' % num_left)
 
 
-      
 
 
         br = HtmlElement.br(clear=True)

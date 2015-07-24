@@ -142,7 +142,7 @@ class Note(SObject):
     get_search_by_sobjects = classmethod(get_search_by_sobjects)
 
 
-    def create(sobject, value, context=None, process=None, parent_id=0, time=''):
+    def create(sobject, value, context=None, process=None, parent_id=0, time='', addressed_to=None, triggers=True): # MTM added addressed_to and triggers
 
         note = Note.create_new()
         note.set_user()
@@ -171,12 +171,14 @@ class Note(SObject):
             note.set_value("parent_id", parent_id)
         if time:
             note.set_value("timestamp" , str(time))
+        if addressed_to:
+            note.set_value("addressed_to", addressed_to)
 
         note.set_value("note", value)
         
         note.set_sobject_value(sobject)
 
-        note.commit()
+        note.commit(triggers=triggers) #MTM added triggers
 
         return note
 

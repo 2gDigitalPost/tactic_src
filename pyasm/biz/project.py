@@ -539,7 +539,7 @@ class Project(SObject):
             if search_type.startswith('sthpw/'):
                 return 'sthpw'
             # this is specifically for project-specific sType
-            
+
             search_type_obj = SearchType.get(search_type)
             database = search_type_obj.get_value("database")
             if database != "{project}":

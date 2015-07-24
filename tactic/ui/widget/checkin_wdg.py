@@ -34,16 +34,19 @@ import os
 
 
 class CheckinWdg(BaseRefreshWdg):
-
+    #MTM added processes, append_processes, override_processes
     ARGS_KEYS = {
         'search_key': 'the search key of the object boing checked into',
         'snapshot_code': 'code of the snapshot this widget is working on',
         'process': 'force set the process',
+        'processes': 'set of pipe separated processes for the pulldown',
         'context': 'force set the initial context',
         'lock_process': 'true|false',
         'sandbox_dir': 'a virtual sandbox dir',
         'validate_script_path': 'path to the validate publish script',
         'checkin_script_path': 'path to the publish script',
+        'append_processes': 'processes to append to the process pulldown',
+        'override_processes': 'override the process pulldown with these processes',
 
         'checkin_script': 'inline action to publish',
         'create_sandbox_script_path': 'inline action to create the sandbox folder and subfolders',
@@ -84,7 +87,9 @@ class CheckinWdg(BaseRefreshWdg):
             raise TacticException('This search_key [%s] is no longer valid. It may have been retired or deleted.' %my.search_key)
         my.search_type = my.sobject.get_base_search_type()
         assert my.sobject
-
+        my.manual_processes = [] #MTM ADDED THIS
+        if 'override_processes' in my.kwargs.keys(): #MTM
+            my.manual_processes = my.kwargs.get('override_processes').split('|') #MTM
         my.snapshot_code = my.kwargs.get("snapshot_code")
         if my.snapshot_code:
             my.snapshot = Snapshot.get_by_code(my.snapshot_code)
@@ -124,7 +129,8 @@ class CheckinWdg(BaseRefreshWdg):
         my.show_file_selector = my.kwargs.get('show_file_selector') != 'false'
         my.checkout_script_path = my.kwargs.get('checkout_script_path')
         my.checkin_ui_options = my.kwargs.get('checkin_ui_options')
-
+        my.append_processes = my.kwargs.get('append_processes')  #MTM
+        my.override_processes = my.kwargs.get('override_processes') #MTM
 
         my.panel_cls = None
 
@@ -133,21 +139,31 @@ class CheckinWdg(BaseRefreshWdg):
         #my.subcontext = web.get_form_value('subcontext')
 
         my.process = my.get_value("process")
-        my.context = None
+        #MTM DOWN TO ....
+        my.context = my.get_value("context") #MTM brought over from 3.9 - was ON
+        my.show_context = my.kwargs.get("show_context") in [True, 'true'] # MTM brought over from 3.9, did not exist here
         my.subcontext = my.get_value("subcontext")
         my.folder_state = my.get_value("folder_state")
- 
-        # get the pipeline
-        my.pipeline = Pipeline.get_by_sobject(my.sobject)
+        my.processes = ['publish'] 
+        my.pipeline = None
         my.auto_process = False
-        if not my.pipeline:
-            my.processes = ['publish']
-            my.auto_process = True
-        else:
-            my.processes = my.pipeline.get_process_names()
+        if my.override_processes in [None,'']:
+            # get the pipeline
+            my.pipeline = Pipeline.get_by_sobject(my.sobject)
+            if not my.pipeline:
+                my.processes = ['publish']
+            else:
+                my.processes = my.pipeline.get_process_names()
             if not my.processes:
                 my.processes = ['publish']
                 my.auto_process = True
+        else:
+            my.processes = my.override_processes.split('|')
+        if my.append_processes not in [None,''] and my.override_processes in [None,'']:
+            ap_split = my.append_processes.split('|')
+            for aper in ap_split:
+                my.processes.append(aper)
+        #...MTM HERE
         if not my.process:
             # get the last process
             current_process = WidgetSettings.get_value_by_key("current_process")
@@ -546,7 +562,13 @@ class CheckinWdg(BaseRefreshWdg):
                 process_select.add_style("width: 150px")
                 process_select.add_style("margin-top: -5px")
                 process_select.add_class("spt_checkin_process")
-                process_select.set_option("values", my.processes)
+                if len(my.manual_processes) > 0: #MTM
+                    for mp in my.manual_processes: #MTM
+                        process_select.append_option(mp, mp) #MTM 
+                else: #MTM
+                    process_select.set_option("values", my.processes) #MTM
+                if my.process not in [None,'']: # MTM
+                    process_select.set_value(my.process) #MTM
                 show_links = my.kwargs.get("show_links") not in [False, 'false']
                 if show_links:
                     process_select.add_behavior( {
@@ -4460,14 +4482,14 @@ class CheckinSandboxListWdg(BaseRefreshWdg):
 
 
 
+        #MTM Turned this off
+        #button = ButtonNewWdg(title="More Options", icon=IconWdg.GEAR, show_arrow=True)
+        #button_row.add(button)
 
-        button = ButtonNewWdg(title="More Options", icon=IconWdg.GEAR, show_arrow=True)
-        button_row.add(button)
-
-        gear_menu = my.get_gear_menu()
-        SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'BUTTON_MENU': gear_menu } )
-        SmartMenu.assign_as_local_activator( button.get_button_wdg(), "BUTTON_MENU", True )
-
+        #gear_menu = my.get_gear_menu()
+        #SmartMenu.add_smart_menu_set( button.get_button_wdg(), { 'BUTTON_MENU': gear_menu } )
+        #SmartMenu.assign_as_local_activator( button.get_button_wdg(), "BUTTON_MENU", True )
+        #MTM Turned above off
 
  
         return div

@@ -195,8 +195,11 @@ class MainWdg(BaseRefreshWdg):
 
 
     def get_display(my):
+        login_groups = Environment.get_group_names()
 
         top = DivWdg()
+        if 'admin' not in login_groups:
+            return top
         top.add_border()
         top.add_style("padding: 10px")
         top.add_color("color", "color")

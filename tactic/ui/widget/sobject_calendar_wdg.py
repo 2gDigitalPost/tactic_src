@@ -1326,6 +1326,314 @@ class ActivityCalendarWdg(SObjectCalendarWdg):
 
         return div
 
+__all__.append("ExpectedDeliveryCalendarWdg")
+class ExpectedDeliveryCalendarWdg(SObjectCalendarWdg):
+
+    def handle_search(my):
+
+
+        my.start_date = datetime(my.year, my.month, 1)
+        next_month = my.month+1
+        next_year = my.year
+        if next_month > 12:
+            next_month = 1
+            next_year += 1
+
+        my.end_date = datetime(next_year, next_month, 1)
+
+        search = Search("twog/title")
+        search.add_filter('status', 'Completed', op="!=")
+        search.add_filter('expected_delivery_date', my.start_date, op=">")
+        search.add_filter('expected_delivery_date', my.end_date, op="<")
+        my.title_count = search.get_count()
+        my.titles = search.get_sobjects()
+        my.titles_count = {}
+        my.titles_str = {}
+        title_codes = ''
+        for title in my.titles:
+            tcode = title.get_value('code')
+            date = title.get_value("expected_delivery_date")
+            date = parser.parse(date)
+            date = datetime(date.year, date.month, date.day)
+
+            count = my.titles_count.get(str(date))
+            if not count:
+                count = 0
+
+            count += 1
+            my.titles_count[str(date)] = count
+            if title_codes == '':
+                title_codes = "('%s'" % tcode
+            else:
+                title_codes = "%s,'%s'" % (title_codes, title.get_value('code'))
+            if str(date) not in my.titles_str.keys():
+                my.titles_str[str(date)] = tcode
+            else:
+                my.titles_str[str(date)] = '%s|%s' % (my.titles_str[str(date)], tcode)
+        title_codes = '%s)' % title_codes
+       
+       
+
+        search = Search("sthpw/task")
+        #search.add_filter("bid_end_date", my.start_date, op=">")
+        #search.add_filter("bid_end_date", my.end_date, op="<")
+        search.add_filter("search_type", "twog/proj?project=twog")
+        search.add_where("\"title_code\" in %s" % title_codes)
+        search.add_where("\"status\" not in ('Pending','Completed')")
+        my.task_count = search.get_count()
+        my.tasks = search.get_sobjects()
+        my.tasks_count = {}
+        my.dept_task_count = {}
+        my.depts = []
+        for task in my.tasks:
+            date = task.get_value("bid_end_date")
+            date = parser.parse(date)
+            date = datetime(date.year, date.month, date.day)
+
+            count = my.tasks_count.get(str(date))
+            if not count:
+                count = 0
+
+            count += 1
+            my.tasks_count[str(date)] = count
+            asl = task.get_value('assigned_login_group')
+            if str(date) not in my.dept_task_count.keys():
+                my.dept_task_count[str(date)] = {}
+            try:
+                my.dept_task_count[str(date)][asl] = my.dept_task_count[str(date)][asl] + 1 
+            except:
+                my.dept_task_count[str(date)][asl] = 1
+            if asl not in my.depts:
+                my.depts.append(asl)
+            
+                
+        my.depts.sort()
+
+
+#        search = Search("sthpw/snapshot")
+#        search.add_filter("timestamp", my.start_date, op=">")
+#        search.add_filter("timestamp", my.end_date, op="<")
+#        my.snapshot_count = search.get_count()
+#        my.snapshots = search.get_sobjects()
+#        my.snapshots_count = {}
+#        for snapshot in my.snapshots:
+#            date = snapshot.get_value("timestamp")
+#            date = parser.parse(date)
+#            date = datetime(date.year, date.month, date.day)
+#
+#            count = my.snapshots_count.get(str(date))
+#            if not count:
+#                count = 0
+#            count += 1
+#            my.snapshots_count[str(date)] = count
+
+
+
+
+        search = Search("sthpw/task")
+        search.add_filter("timestamp", my.start_date, op=">")
+        search.add_filter("timestamp", my.end_date, op="<")
+        my.task_count = search.get_count()
+
+
+
+
+#        search = Search("sthpw/note")
+#        search.add_filter("timestamp", my.start_date, op=">")
+#        search.add_filter("timestamp", my.end_date, op="<")
+#        my.note_count = search.get_count()
+#        my.notes = search.get_sobjects()
+#        my.notes_count = {}
+#        for note in my.notes:
+#            date = note.get_value("timestamp")
+#            date = parser.parse(date)
+#            date = datetime(date.year, date.month, date.day)
+#
+#            count = my.notes_count.get(str(date))
+#            if not count:
+#                count = 0
+#            count += 1
+#            my.notes_count[str(date)] = count
+
+
+
+
+#        search = Search("sthpw/work_hour")
+#        search.add_filter("day", my.start_date, op=">=")
+#        search.add_filter("day", my.end_date, op="<=")
+#        my.work_hour_count = search.get_count()
+#        my.work_hours = search.get_sobjects()
+#        my.work_hours_count = {}
+#        for work_hour in my.work_hours:
+#            date = work_hour.get_value("day")
+#            date = parser.parse(date)
+#            date = datetime(date.year, date.month, date.day)
+#
+#            total = my.work_hours_count.get(str(date))
+#            if not total:
+#                total = 0
+#
+#            straight_time = work_hour.get_value("straight_time")
+#            if straight_time:
+#                total += straight_time
+#            my.work_hours_count[str(date)] = straight_time
+
+
+
+    def get_day_wdg(my, month, day):
+
+        div = DivWdg()
+        div.add_style("width: 150px")
+        div.add_style("height: %spx" % ((len(my.depts) + 2) * 25))
+        div.add_style("padding: 5px")
+
+
+
+        # if the day is today
+        today = datetime.today()
+        if day.year == today.year and day.month == today.month and day.day == today.day:
+            div.add_color("background", "background", [-20, -20, 20])
+            div.add("[%s]" % day.day)
+
+        elif day.weekday() in [5, 6]:
+            div.add_color("background", "background", -3)
+            if day.month != my.month:
+                div.add("<i style='opacity: 0.3'>[%s]</i>" % day.day)
+            else:
+                div.add("[%s]" % day.day)
+
+        # if the month is different than today
+        elif day.month != my.month:
+            #div.add_color("background", "background", [-5, -5, -5])
+            div.add("<i style='opacity: 0.3'>[%s]</i>" % day.day)
+
+
+        else:
+            div.add("[%s]" % day.day)
+
+        key = "%s-%0.2d-%0.2d 00:00:00" % (day.year, day.month, day.day)
+
+        dt_day = datetime(day.year, day.month, day.day)
+        title_color = '#000000'
+        if today >= dt_day and my.titles_str.get(key) not in [None,'']:
+            title_color = '#FF0000'
+
+        div.add("<br/>")
+        div.add("<br/>")
+
+
+
+        if my.titles_str.get(key) not in [None,'']:
+            div.add_behavior( {
+                'type': 'click_up',
+                'cbjs_action': '''
+                title_codes = '%s';
+                //spt.panel.load_popup('Selected Titles', 'tactic.ui.panel.ViewPanelWdg', {'layout': 'fast_table', 'simple_search_view': 'simple_title_filter', 'search_type': 'twog/title', 'view': 'titles_hl', 'element_name': 'titles_hl', 'expression': "@SOBJECT(sthpw/task['title_code','in','" + title_codes + "']['active','1']['search_type','twog/proj?project=twog'].twog/title)"});
+                //spt.panel.load_popup('Selected Titles', 'tactic.ui.panel.ViewPanelWdg', {'layout': 'fast_table', 'simple_search_view': 'simple_title_filter', 'search_type': 'twog/title', 'view': 'titles_hl', 'element_name': 'titles_hl', 'expression': "@SOBJECT(twog/title['code','in','" + title_codes + "'])"});
+                spt.panel.load_popup('Selected Titles', 'reports.calendar.TitleCalendarLaunchWdg', {'title_codes': title_codes});
+                ''' % my.titles_str.get(key)
+            })
+
+
+        num_titles = my.titles_count.get(key)
+        if num_titles:
+            line_div = DivWdg()
+            div.add(line_div)
+            line_div.add_style("padding: 3px")
+            icon = IconWdg("Number of titles to deliver", IconWdg.CALENDAR)
+            line_div.add(icon)
+            #line_div.add_style("opacity: 0.15")
+            #line_div.add_style("font-style: italic")
+            line_div.add_style('color: %s;' % title_color)
+            line_div.add("%s titles to deliver<br/>" % num_titles)
+
+
+
+
+
+        num_tasks = my.tasks_count.get(key)
+        if num_tasks:
+            line_div = DivWdg()
+            div.add(line_div)
+            line_div.add_style("padding: 3px")
+            icon = IconWdg("Number of task due", IconWdg.CALENDAR)
+            line_div.add(icon)
+            #line_div.add_style("opacity: 0.15")
+            #line_div.add_style("font-style: italic")
+            line_div.add("%s task/s due<br/>" % num_tasks)
+        
+        for dept in my.depts:
+            dept_ct = 0
+            try:
+                if dept in my.dept_task_count[key].keys():
+                    dept_ct = my.dept_task_count[key][dept] 
+            except:
+                dept_ct = 0
+            if dept_ct > 0:
+                line_div = DivWdg()
+                div.add(line_div)
+                line_div.add_style("padding: 3px")
+                icon = IconWdg('%s Tasks' % dept.upper(), IconWdg.CALENDAR)
+                line_div.add(icon)
+                line_div.add_style('font-size: 9px;')
+                #line_div.add_style("opacity: 0.15")
+                #line_div.add_style("font-style: italic")
+                line_div.add("%s %s<br/>" % (dept.upper(), dept_ct))
+
+
+
+
+#        line_div = DivWdg()
+#        div.add(line_div)
+#        line_div.add_style("padding: 3px")
+#        icon = IconWdg("Number of check-ins", IconWdg.PUBLISH)
+#        line_div.add(icon)
+#        num_snapshots = my.snapshots_count.get(key)
+#        if not num_snapshots:
+#            num_snapshots = 0
+#            line_div.add_style("opacity: 0.15")
+#            line_div.add_style("font-style: italic")
+#        line_div.add("%s check-in/s<br/>" % num_snapshots )
+#
+#
+#        line_div = DivWdg()
+#        div.add(line_div)
+#        line_div.add_style("padding: 3px")
+#        icon = IconWdg("Number of notes", IconWdg.NOTE)
+#        line_div.add(icon)
+#        num_notes = my.notes_count.get(key)
+#        if not num_notes:
+#            num_notes = 0
+#            line_div.add_style("opacity: 0.15")
+#            line_div.add_style("font-style: italic")
+#        line_div.add("%s note/s<br/>" % num_notes)
+#
+#
+#        line_div = DivWdg()
+#        div.add(line_div)
+#        line_div.add_style("padding: 3px")
+#        icon = IconWdg("Work Hours", IconWdg.CLOCK)
+#        line_div.add(icon)
+#        work_hours = my.work_hours_count.get(key)
+#        if not work_hours:
+#            work_hours = 0
+#            line_div.add_style("opacity: 0.15")
+#            line_div.add_style("font-style: italic")
+#        line_div.add("%s work hours<br/>" % work_hours)
+
+
+        #div.add("%s tasks completed<br/>" % my.task_count)
+        #div.add("%s notes entered<br/>" % my.notes_count)
+        #div.add("%s work hours<br/>" % my.work_hours_count)
+
+
+        return div
+
+
+
+
+
+
 
 
 

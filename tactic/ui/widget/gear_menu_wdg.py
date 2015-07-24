@@ -258,21 +258,19 @@ class DgTableGearMenuWdg(BaseRefreshWdg):
                         'popup_id': 'TransactionLog_popup'
                     }
                 }
-            },
+            }]) #MTM TURNED OFF TO PREVENT AUTO-UNDOING
+            #
+            #{ "type": "separator" },
+            #
+            #{ "type": "action", "label": "Undo Last Server Transaction",
+            #    "bvr_cb": {'cbjs_action': "spt.undo_cbk(evt, bvr);"}
+            #},
+            #
+            #{ "type": "action", "label": "Redo Last Server Transaction",
+            #    "bvr_cb": {'cbjs_action': "spt.redo_cbk(evt, bvr);"}
+            #},
 
-            { "type": "separator" },
-
-            { "type": "action", "label": "Undo Last Server Transaction",
-                "bvr_cb": {'cbjs_action': "spt.undo_cbk(evt, bvr);"}
-            },
-
-            { "type": "action", "label": "Redo Last Server Transaction",
-                "bvr_cb": {'cbjs_action': "spt.redo_cbk(evt, bvr);"}
-            },
-
-        ])
         return { 'menu_tag_suffix': 'EDIT', 'width': 200, 'opt_spec_list': opt_spec_list}
-
 
 
     def get_file_menu(my):
@@ -1055,6 +1053,8 @@ class PageHeaderGearMenuWdg(BaseRefreshWdg):
         security = Environment.get_security()
         if security.check_access("builtin", "view_site_admin", "allow"):
             menus = [ my.get_main_menu(), my.get_add_menu(), my.get_edit_menu(), my.get_tools_menu(), my.get_help_menu() ]
+        elif 'client' in security.get_group_names(): #MTM
+            menus = []                               #MTM
         else:
             menus = [ my.get_main_menu(), my.get_edit_menu(), my.get_help_menu() ]
 
@@ -1168,18 +1168,23 @@ class PageHeaderGearMenuWdg(BaseRefreshWdg):
                         }
                     }
 
-                },
-                { "type": "separator" },
+                }]}
+                #MTM Turned off to prevent users from auto-undoing 
+                #
+                #,
+                #{ "type": "separator" },
+                #
+                #{ "type": "action", "label": "Undo Last Server Transaction",
+                #    "bvr_cb": {'cbjs_action': "spt.undo_cbk();"}
+                #},
+                #
+                #{ "type": "action", "label": "Redo Last Server Transaction",
+                #    "bvr_cb": {'cbjs_action': "spt.redo_cbk();"}
+                #},
 
-                { "type": "action", "label": "Undo Last Server Transaction",
-                    "bvr_cb": {'cbjs_action': "spt.undo_cbk();"}
-                },
+        #]
+                #MTM Turned off to prevent users from auto-undoing 
 
-                { "type": "action", "label": "Redo Last Server Transaction",
-                    "bvr_cb": {'cbjs_action': "spt.redo_cbk();"}
-                },
-
-        ] }
 
 
     def get_tools_menu(my):

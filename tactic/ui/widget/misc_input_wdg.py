@@ -180,12 +180,10 @@ class TaskStatusElementWdg(SimpleTableElementWdg):
             td.set_attr("spt_pipeline_code", pipeline_code)
 
             pipeline = Pipeline.get_by_code(pipeline_code)
-            if pipeline:
-                #attributes = pipeline.get_process_attrs(value)
-                #color = attributes.get("color")
-                process = pipeline.get_process(value)
-                if process:
-                    color = process.get_color()
+            if pipeline:                                        #MTM altered this
+                attributes = pipeline.get_process_attrs(value)  #MTM altered this
+                if not color:                                   #MTM altered this
+                    color = attributes.get("color")             #MTM altered this
 
         if color:
            td.add_style("background-color: %s" % color)
@@ -222,8 +220,8 @@ class TaskStatusSelectWdg(SelectWdg):
                 task_pipe_code = 'task'
             
             pipeline = Pipeline.get_by_code(task_pipe_code)
-            if not pipeline:
-                pipeline = Pipeline.get_by_code('task')
+            #MTM OFFif not pipeline:
+            #MTM OFF    pipeline = Pipeline.get_by_code('task')
             my.task_pipelines = [pipeline]
         else:
 

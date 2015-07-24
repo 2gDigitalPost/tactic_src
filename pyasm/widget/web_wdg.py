@@ -1152,6 +1152,20 @@ class WebLoginWdg(Widget):
         my.hidden = kwargs.get('hidden') in  [True, 'True']
         super(WebLoginWdg,my).__init__("div")
 
+    #MTM ADDED THIS FUNCTION 
+    def get_lowercase_behavior(my):
+        behavior = {'css_class': 'clickme', 'type': 'onkeyup', 'cbjs_action': '''        
+                        try{
+                            alert('IF THIS IS POPPING UP, THERE IS AN ERROR');
+                            //current_val = bvr.src_el.value;
+                            //bvr.src_el.value = current_val.toLowerCase();
+                }
+                catch(err){
+                          spt.app_busy.hide();
+                          alert(err);
+                }
+         '''}
+        return behavior
 
     def get_display(my):
         name_label = my.kwargs.get('name_label')
@@ -1173,6 +1187,14 @@ class WebLoginWdg(Widget):
         script = HtmlElement.script('''function tactic_login(e) {
                 if (!e) var e = window.event;
                 if (e.keyCode == 13) {
+                    inputs = document.getElementsByTagName('input');    //MTM HERE To...
+                    name_input = null;                                 
+                    for(var r = 0; r < inputs.length; r++){ 
+                        if(inputs[r].getAttribute('name') == 'login'){ 
+                            name_input = inputs[r];
+                        }
+                    } 
+                    name_input.value = name_input.value.toLowerCase(); //HERE MTM
                     document.form.submit();
                 }}
                 ''')
@@ -1219,7 +1241,8 @@ class WebLoginWdg(Widget):
 
             sudo.exit()
 
-        div.add("<img src='/context/icons/logo/TACTIC_logo_white.png'/>")
+        div.add("<img src='/context/icons/custom/2G_Tactic_Logo.png'/>") #MTM Make sure to grab this image file and move it to this location after upgrading
+        custom_logo_height_increase = 250 #MTM Made this
         div.add("<br/>"*2)
         div.add_gradient("color", "color3")
         div.add_gradient("background", "background3", -10, 10)
@@ -1227,7 +1250,7 @@ class WebLoginWdg(Widget):
         div.set_box_shadow("0px 5px 20px", color="rgba(0,0,0,0.6)")
         div.set_round_corners(15)
         if change_admin:
-            div.add_style("height: 250px")
+            div.add_style("height: %spx" % ( 250 + custom_logo_height_increase)) # MTM MADE THIS
             div.add_style("padding-top: 20px")
         else:
             div.add_style("padding-top: 25px")
@@ -1311,6 +1334,7 @@ class WebLoginWdg(Widget):
         text_wdg.add_style("width: 130px")
         text_wdg.add_style("color: black")
         text_wdg.add_style("padding: 2px")
+        text_wdg.add_behavior(my.get_lowercase_behavior()) #MTM
         if my.hidden:
             login_name = Environment.get_user_name()
             text_wdg.set_value(login_name)
@@ -1382,7 +1406,8 @@ class WebLoginWdg(Widget):
         span.add(HiddenWdg("Submit"))
         span.add_event("onmouseover", "getElementById('submit_on').style.display='none';getElementById('submit_over').style.display='';")
         span.add_event("onmouseout", "getElementById('submit_over').style.display='none';getElementById('submit_on').style.display='';")
-        span.add_event("onclick", "document.form.elements['Submit'].value='Submit';document.form.submit()")
+        span.add_event("onclick", "inputs = document.getElementsByTagName('input'); name_input = null; for(var r = 0; r < inputs.length; r++){ if(inputs[r].getAttribute('name') == 'login'){ name_input = inputs[r];}} name_input.value = name_input.value.toLowerCase(); document.form.elements['Submit'].value='Submit';document.form.submit()") # MTM
+        #MTM TURNED OFF span.add_event("onclick", "document.form.elements['Submit'].value='Submit';document.form.submit()")
         th = table2.add_header(span)
         th.add_style("text-align: center")
 
@@ -1393,7 +1418,7 @@ class WebLoginWdg(Widget):
         
         if my.hidden:
             msg = 'Your session has expired. Please login again.'
-            div.add_style("height: 230px")
+            div.add_style("height: %spx" % (230 + custom_logo_height_increase)) # MTM MADE THIS
 
         if msg:
             from tactic.ui.widget import ResetPasswordWdg
@@ -1422,7 +1447,7 @@ class WebLoginWdg(Widget):
                 td.add(link)
 
         else:
-            div.add_style("height: 250px")
+            div.add_style("height: %spx" % (210 + custom_logo_height_increase)) # MTM MADE THIS
 
         div.add(HtmlElement.br())
         div.add(table)

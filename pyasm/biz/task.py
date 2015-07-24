@@ -29,19 +29,31 @@ from dateutil import parser
 
 TASK_PIPELINE = '''
 <pipeline type="serial">
-  <process completion="0" color="#ecbf7f" name="Assignment"/>
-  <process completion="10" color="#8ad3e5" name="Pending"/>
-  <process completion="20" color="#e9e386" name="In Progress"/>
-  <process completion="20" color="#a96ccf" name="Waiting"/>
-  <process completion="30" color="#a96ccf" name="Need Assistance"/>
-  <process completion="80" color="#e84a4d" name="Review"/>
-  <process completion="100" color="#a3d991" name="Approved"/>
-  <connect to="Review" from="Need Assistance"/>
-  <connect to="In Progress" from="Pending"/>
-  <connect to="Pending" from="Assignment"/>
-  <connect to="Need Assistance" from="Waiting"/>
-  <connect to="Waiting" from="In Progress"/>
-  <connect to="Approved" from="Review"/>
+  <process completion="0" color="#d7d7d7" name="Pending"/>
+  <process completion="5" color="#b2cee8" name="Ready"/>
+  <process completion="27" color="#e8b2b8" name="On_Hold"/>
+  <process completion="27" color="#ddd5b8" name="Client Response"/>
+  <process completion="27" color="#c466a1" name="Fix Needed"/>
+  <process completion="27" color="#ff0000" name="Rejected"/>
+  <process completion="50" color="#f5f3a4" name="In_Progress"/>
+  <process completion="50" color="#d6e0a4" name="DR In_Progress"/>
+  <process completion="50" color="#c6e0a4" name="BATON In_Progress"/>
+  <process completion="50" color="#796999" name="Export In_Progress"/>
+  <process completion="75" color="#e3701a" name="Need Buddy Check"/>
+  <process completion="75" color="#1aade3" name="Buddy Check In_Progress"/>
+  <process completion="100" color="#b7e0a5" name="Completed"/>
+  <connect to="Ready" from="Pending"/>
+  <connect to="On_Hold" from="Ready"/>
+  <connect to="Client Response" from="On_Hold"/>
+  <connect to="Fix Needed" from="Client Response"/>
+  <connect to="Rejected" from="Fix Needed"/>
+  <connect to="In_Progress" from="Rejected"/>
+  <connect to="DR In_Progress" from="In_Progress"/>
+  <connect to="BATON In_Progress" from="DR In_Progress"/>
+  <connect to="Export In_Progress" from="BATON In_Progress"/>
+  <connect to="Need Buddy Check" from="Export In_Progress"/>
+  <connect to="Buddy Check In_Progress" from="Need Buddy Check"/>
+  <connect to="Completed" from="Buddy Check In_Progress"/>
 </pipeline>
 '''
 
@@ -49,12 +61,26 @@ default_xml = Xml()
 default_xml.read_string(TASK_PIPELINE)
 
 OTHER_COLORS = {
-    "Complete": "#a3d991",
-    "Done":     "#a3d991",
-    "Final":    "#a3d991",
-    "Revise":   "#e84a4d",
-    "Ready":    "#a3d991",
-    "In_Progress":"#e9e386",
+    "Complete": "#b7e0a5",
+    "Completed": "#b7e0a5",
+    "Done":     "#00c611",
+    "Final":    "#00c611",
+    "Revise":   "#ff0800",
+    "Ready":    "#b2cee8",
+    "In-Progress":"#f5f3a4",
+    "In_Progress":"#f5f3a4",
+    "In Progress":"#f5f3a4",
+    "DR In_Progress":"#d6e0a4",
+    "Export In_Progress":"#796999",
+    "BATON In_Progress":"#c6e0a4",
+    "Need Buddy Check":"#e3701a",
+    "Buddy Check In_Progress":"#1aade3",
+    "Internal Rejection": "#ff0000",
+    "External Rejection": "#ff0000",
+    "Failed QC": "#ff0000",
+    "Fix Needed": "#c466a1",
+    "Rejected": "#ff0000",
+    "Client Response": "#ddd5b8"
 }
 
 
@@ -93,6 +119,39 @@ class Task(SObject):
     def get_default_color(process):
         global default_xml
         global OTHER_COLORS
+        #MTM added the if statements linked to statuses
+        if process.title() == 'Pending': 
+            return "#d7d7d7"
+        elif process.title() == 'Ready': 
+            return "#b2cee8"
+        elif process.title() == 'On_Hold': 
+            return "#e8b2b8"
+        elif process.title() == 'Client Response': 
+            return "#ddd5b8"
+        elif process.title() == 'Internal Rejection': 
+            return "#ff0000"
+        elif process.title() == 'External Rejection': 
+            return "#ff0000"
+        elif process.title() == 'Failed QC': 
+            return "#ff0000"
+        elif process.title() == 'Rejected': 
+            return "#ff0000"
+        elif process.title() == 'Fix Needed': 
+            return "#c466a1"
+        elif process.title() == 'In_Progress': 
+            return "#f5f3a4"
+        elif process.title() == 'DR In_Progress': 
+            return "#d6e0a4"
+        elif process.title() == 'BATON In_Progress': 
+            return "#c6e0a4"
+        elif process.title() == 'Export In_Progress': 
+            return "#796999"
+        elif process.title() == 'Need Buddy Check': 
+            return "#e3701a"
+        elif process.title() == 'Buddy Check In_Progress': 
+            return "#1aade3"
+        elif process.title() == 'Completed': 
+            return "#b7e0a5"
         node = default_xml.get_node("pipeline/process[@name='%s']" % process.title())
         if node is None:
             return OTHER_COLORS.get(process.title())
@@ -118,12 +177,12 @@ class Task(SObject):
     def add_static_triggers(cls):
         # event sthpw/trigger
         from pyasm.command import Trigger
-        event = "change|sthpw/task"
-        trigger = SearchType.create("sthpw/trigger")
-        trigger.set_value("event", event)
+        #event = "change|sthpw/task" # MTM ...
+        #trigger = SearchType.create("sthpw/trigger")
+        #trigger.set_value("event", event)
         #trigger.set_value("mode", "same process,same transaction")
-        trigger.set_value("class_name", "tactic.command.RelatedTaskUpdateTrigger")
-        Trigger.append_static_trigger(trigger)
+        #trigger.set_value("class_name", "tactic.command.RelatedTaskUpdateTrigger")
+        #Trigger.append_static_trigger(trigger) # ... MTM
 
 
         event = "change|sthpw/task|status"

@@ -20,10 +20,11 @@ from pyasm.web import  DivWdg, HtmlElement, WebContainer
 class IconWdg(DivWdg):
 
     icons = {
-    # 16x16 icons		    
+    # 16x16 icons                    
     'ADD'                  : "add.png",
     'ADD_GRAY'             : "add_GRAY.png",
     'ADVANCED'             : "/context/icons/common/advanced.png",
+    'ALL_OK'               : "/context/icons/custom/allok_small.png",
     'APPLICATION_TILE_VERTICAL' : "application_tile_vertical.png",
     'APP_TILE_VERTICAL'    : "application_tile_vertical.png",
     'APP_VIEW_TILE'        : "application_view_tile.png",
@@ -34,9 +35,13 @@ class IconWdg(DivWdg):
     'ARROW_RIGHT'          : "/context/icons/common/right-arrow.png",
     'ARROW_UP'             : "/context/icons/common/up-arrow.png",
     'ARROW_UP_GREEN'       : "arrow_up.png",
+    'ARROW_UP_SOURCE'      : "/context/icons/custom/arrow_up_source.png", # MTM DID THIS. KAE SURE TO CARRY THIS FILE OVER ON UPDATE
+    'ARROW_UP_EQUIPMENT'   : "/context/icons/custom/arrow_up_equipment.png", # MTM DID THIS. KAE SURE TO CARRY THIS FILE OVER ON UPDATE
     'ARROW_DOWN'           : "/context/icons/common/down-arrow.png",
     'ARROW_OUT'            : "arrow_out.png",
     'ARROW_OUT_GRAY'       : "arrow_out_GRAY.png",
+    'ARROW_OUT_SOURCE'     : "/context/icons/custom/arrow_out_source.png", # MTM DID THIS. KAE SURE TO CARRY THIS FILE OVER ON UPDATE
+    'ARROW_OUT_EQUIPMENT'  : "/context/icons/custom/arrow_out_equipment.png", # MTM DID THIS. KAE SURE TO CARRY THIS FILE OVER ON UPDATE
     'ARROW_MORE_INFO'      : "/context/icons/custom/triangle_down.png",
     'ASSIGN'               : "_spt_user_assign.png",
     'ARROW_SWITCH'         : "arrow_switch.png",
@@ -67,6 +72,7 @@ class IconWdg(DivWdg):
     'CONTENTS'             : "application_view_list.png",
     'CREATE'               : "lightbulb_off.png",
     'CROSS'                : "/context/icons/common/BtnKill.gif",
+    'CROSS_BLACK'                : "/context/icons/common/BtnKill_Black.gif", # MTM added this one. be sure to pull across
     'CURRENT'              : "_spt_bullet_radio.png",
 
     'DATE'                 : "date.png",
@@ -88,6 +94,7 @@ class IconWdg(DivWdg):
     'DB_GEAR'              : "database_gear.png",
 
     "DOCUMENTATION"        : "/context/icons/16x16/documentation.png",
+    "DOLLAR"               : "/context/icons/custom/dollar.png", #MTM
 
     'DOT_RED'              : "/context/icons/common/dot_red.png",
     'DOT_YELLOW'           : "/context/icons/common/dot_yellow.png",
@@ -100,7 +107,9 @@ class IconWdg(DivWdg):
     'EDIT_SETTINGS'        : "cog_edit.png",
     'EMAIL'                : "email.png",
     'ERROR'                : "exclamation.png",
+    'EQUIPMENT_ADD'        : "/context/icons/custom/equipment_add.png", # MTM ADDED THIS - make sure you carry the png along when you upgrade
 
+    'FILE_ADD'             : "/context/icons/custom/file_add.png",
     'FILM'                 : "film.png",
     'FILM_SUBMIT'          : "film_go.png",
     'FLOAT'                : "/context/icons/oo_prev/stock_cell-align-top-16.png", # need to replace!
@@ -115,12 +124,16 @@ class IconWdg(DivWdg):
     'DETAILS'              : "page_white_text.png",
     'DIALOG_CLOSE'         : "/context/spt_js/mooDialog/css/dialog-close2.png",
 
+    'FLAME'                : "/context/icons/custom/flame.png",
+
     'GEAR'                 : "cog.png",
     'GOOD'                 : "accept.png",
+    'GRAY_BOMB'            : "/context/icons/custom/gray_bomb.png",
     'GREEN_LIGHT'          : "/context/icons/custom/green_light.png",
     'GROUP'                : "group.png",
     'GROUP_LINK'           : "group_link.png",
 
+    'HACKUP'                   : "/context/icons/custom/hackup.png", #MTM
     'HELP'                 : "help.png",
     'HELP_BUTTON'          : "/context/icons/custom/help_button.png",
     'HELP_MISSING'         : "/context/icons/32x32/help_01_32.png",
@@ -142,18 +155,22 @@ class IconWdg(DivWdg):
     'JUMP'                 : "door_in.png",
 
     'KILL'                 : "/context/icons/common/kill_button.png",
+    'KILL_BW'              : "/context/icons/custom/kill_bw.png", # MTMT ADDED THIS. MAKE SURE TO CARRY IT ALONG
     'LAYER'                : "_spt_page_white_stack_add.png",
     'LEFT'                 : "control_rewind.png",
     'LICENSE'              : "rosette.png",
+    'LICENSE2'             : "rosette_grey.png",
     'LOAD'                 : "folder.png",
     'LINK'                 : "link.png",
     'LOCK'                 : "lock.png",
 
     'MAIL'                 : "email.png",
+    'MINUS_BUTTON'         : "/context/icons/custom/MinusIcon.png", # MTM DID THIS. KAE SURE TO CARRY THIS FILE OVER ON UPDATE
     'MOVIE_VIEW'           : "/context/icons/common/view_movie.png",
 
     'NAV'                  : "/context/icons/oo_prev/stock_navigator_purple.png", # need to replace!
     'NEW'                  : "new.png",
+    'NORMAL_EDIT'           : "/context/icons/custom/normal_edit.png",
     'NOTE'                 : "note.png",
     'NOTE_ADD'             : "note_add.png",
     'NOTE_DELETE'          : "note_delete.png",
@@ -174,6 +191,7 @@ class IconWdg(DivWdg):
     'PLUGIN_ADD'           : "plugin_add.png",
     'PLUS'                 : "/context/icons/custom/tab_plus.png",
     'PLUS_ADD'             : "/context/icons/custom/plus_bw.png",
+    'PLUS_BUTTON'          : "/context/icons/custom/PlusIcon.png", # MTM DID THIS. KAE SURE TO CARRY THIS FILE OVER ON UPDATE
     'POPUP_ANCHOR'         : "/context/icons/custom/popup_anchor.png",
     'POPUP_WIN_CLOSE'      : "/context/icons/custom/popup_close.png",
     #'POPUP_WIN_CLOSE'      : "/context/icons/glyphs/test_close.png",
@@ -181,6 +199,7 @@ class IconWdg(DivWdg):
     'POPUP_WIN_REFRESH'    : "_spt_popup_window_refresh.png",
     'PREF'                 : "brick.png",
     'PRINTER'              : "printer.png",
+    'PRIORITY'             : "/context/icons/custom/priority.png", # MTM did this
     'PROCESS'              : "application_view_tile.png",
     'PROGRESS'             : "/context/icons/common/indicator_medium.gif",
     'PROJECT'              : "/context/icons/custom/two_windows.png",
@@ -190,13 +209,17 @@ class IconWdg(DivWdg):
     'PUBLISH'              : "/context/icons/custom/checkin_disk.png",
     'PUBLISH_LG'           : "_spt_disk_with_cog_lg.png",
     'PUBLISH_MULTI'        : "_spt_disk_multiple_with_cog.png",
+ 
+    'QUICK_EDIT'           : "/context/icons/custom/quick_edit.png",
 
+    'RED_BOMB'            : "/context/icons/custom/red_bomb.png",
     'REDO'                 : "arrow_redo.png",
     'REF'                  : "/context/icons/common/reference.png",
     'REFRESH'              : "arrow_refresh.png",
     'REFRESH_GRAY'         : "arrow_refresh_GRAY.png",
     'REGISTER'             : "/context/icons/custom/register.png",
     'RENDER'               : "/context/icons/oo_prev/stock_flip-16.png",  # need to replace!
+    'REPORT_ERROR'         : "/context/icons/custom/report_error.png", # MTM ADDED THIS - make sure you carry the png along when you upgrade
     'RESIZE_CORNER'        : "/context/icons/custom/resize.png",
     'RESIZE_HORIZ'         :    "/context/icons/custom/resize_horiz.png",
     'RESIZE_VERTICAL'      : "/context/icons/custom/resize_vertical.png",
@@ -209,6 +232,9 @@ class IconWdg(DivWdg):
     'SANDBOX'              : "/context/icons/custom/sandbox_16.png",
     'SELECT'               : "cursor.png",
     'SET_PROJECT'          : "folder_go.png",
+    'SOURCE_ADD'           : "/context/icons/custom/source_add2.png", # MTM ADDDED THIS
+    'SOURCE_ADD_TAPE'      : "/context/icons/custom/source_add_tape.png",  #MTM ADDED THIS
+    'SOURCE_PORTAL'        : "/context/icons/custom/source_portal.png",
     'SPECIAL'              : "medal_gold_3.png",
     'STAR'                 : "star.png",
 
@@ -217,6 +243,8 @@ class IconWdg(DivWdg):
     'TABLE_ROW_INSERT'     : "table_row_insert.png",
 
     'TAG_ORANGE'           : "tag_orange.png",
+    'TEMPLATE'             : "/context/icons/custom/template.png", # MTM ADDED THIS - make sure you carry the png along when you upgrade
+    'TEMPLATE_DOWN'        : "/context/icons/custom/template_down.png", # MTM ADDED THIS - make sure you carry the png along when you upgrade
     'TEST'                 : "/context/icons/common/test.png",
     'TIME'                 : "time.png",
     'TIMELINE_MARKER'      : "timeline_marker.png",
@@ -229,6 +257,7 @@ class IconWdg(DivWdg):
     'TRASH'                : "basket_delete.png",
 
 
+    'UH_OH'                : "/context/icons/custom/uhoh_small.png",
     'UNDO'                 : "_spt_arrow_undo_yellow.png",
     'UNKNOWN'              : "/context/icons/oo_prev/stock_unknown-16.png",  # need to replace!
     'UPDATE'               : "_spt_database_update.png",

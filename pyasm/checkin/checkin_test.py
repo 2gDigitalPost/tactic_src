@@ -53,11 +53,11 @@ class CheckinTest(unittest.TestCase, Command):
         Project.set_project("unittest")
        
         try:
-            #Command.execute_cmd(my)
+            #Command.execute_cmd(my) #MTM change had this off
 
             # undo the command
-            #undo = UndoCmd()
-            #undo.execute()
+            #undo = UndoCmd() # MTM change had this off
+            #undo.execute() # MTM change had this off
             my.execute()
 
         finally:

@@ -99,6 +99,9 @@ class CsvExportWdg(BaseRefreshWdg):
         return True
 
     def get_display(my): 
+        from pyasm.common import Environment #MTM
+        login = Environment.get_login() #MTM
+        groups = Environment.get_group_names() #MTM 
 
         top = my.top
         top.add_color("background", "background")
@@ -233,6 +236,9 @@ class CsvExportWdg(BaseRefreshWdg):
             
             title = titles[idx]
             table.add_cell('<b>%s</b> (%s) '%(title, column))
+        if 'client' in groups: #MTM
+            table.add_style('display: none;') #This is how you hide the checkbox
+            div.add_style('display: none;') #This is how you hide the checkbox
 
         action_div = DivWdg()
         widget = DivWdg()

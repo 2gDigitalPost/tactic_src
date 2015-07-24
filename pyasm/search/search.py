@@ -6652,9 +6652,12 @@ class SearchKey(object):
 
  
     def get_by_search_key(search_key):
+        if type(search_key).__name__ in ['SObject','Login']: #MTM did this so I could easily use SObjects and Login objects with this tool
+            search_key = search_key.get_search_key()
         if not search_key:
             return None
-
+        if len(search_key) == 1: #MTM - had to add this because my upload for clients sometimes passes in a list with the search key instead of the search key string
+            search_key = search_key[0] # MTM
         # fix this as a precaution ... if appears from xml occasionally
         while search_key.find("&amp;") != -1:
             search_key = search_key.replace("&amp;", "&")

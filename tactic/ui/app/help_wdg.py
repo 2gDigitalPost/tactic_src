@@ -291,7 +291,7 @@ class HelpDocFilterWdg(BaseRefreshWdg):
             line = line.replace(">", "/>")
         elif line.find("<a ") != -1:
             import re
-            p = re.compile("<a name.*?></>")
+            p = re.compile("<a name.*?></a>")
             p2 = re.compile("<a id.*?></a>")
             line = re.sub(p, "", line)
             line = re.sub(p2, "", line)
