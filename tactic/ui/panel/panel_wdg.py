@@ -186,8 +186,8 @@ class SideBarPanelWdg(BaseRefreshWdg):
         seen_emails = []
         for ug in user_groups:
             if ug not in ['client','user','default']:
-                email = email_lookup[ug]
-                if email not in seen_emails:
+                email = email_lookup.get(ug)
+                if email and email not in seen_emails:
                     seen_emails.append(email)
                     if ugs == '':
                         ugs = email

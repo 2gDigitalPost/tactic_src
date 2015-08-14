@@ -120,8 +120,8 @@ class ExpressionParser(object):
                 else: #MTM Added this
                     grp_str = '%s|%s' % (grp_str, grp) #MTM Added this
                 if grp not in ['client','user','default'] and gc < 4:
-                    ze_email = email_lookup[grp]
-                    if ze_email not in gadded and ze_email != 'FIXME@2gdigital.com':
+                    ze_email = email_lookup.get(grp)
+                    if ze_email and ze_email not in gadded and ze_email != 'FIXME@2gdigital.com':
                         gadded.append(ze_email)
                         my.vars['GROUP%s' % gc] = ze_email
                         gc = gc + 1
