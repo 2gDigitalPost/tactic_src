@@ -220,3 +220,6 @@ pip-log.txt
 .mr.developer.cfg
 
 .idea
+!*version*
+!install/service/tactic
+!*linux_service
