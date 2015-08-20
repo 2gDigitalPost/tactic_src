@@ -1,4 +1,0 @@
-context/spt_js/utility.js:spt.convert_to_alpha_numeric = function( value ) {
-context/spt_js/utility.js:spt.input.has_special_chars = function(str)
-context/spt_js/utility.js:spt.input.is_numeric = function(n) 
-context/spt_js/utility.js:spt.input.is_integer = function(n) 
