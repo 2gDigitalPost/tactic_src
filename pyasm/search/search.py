@@ -491,10 +491,14 @@ class Search(Base):
                     where = filter
                 else:
                     where = filter[0]
-                if where in ['begin','and','or']:
-                    my.add_where(where)
-                else:
-                    raise SearchException('Single argument filter is no longer supported. Try to use 2 or 3 arguments.')
+                # Topher: I'm re-allowing straight WHERE clauses because they are useful and sometimes necessary
+                # Ex. If you have a SelectWdg or checkbox, the default value is NULL until you update it.
+                # But a filter like ('column', '!=', True) will not work with NULL values.
+                # The only way I've gotten it to work is with a straight WHERE clause like ('column is not True').
+                # if where in ['begin','and','or']:
+                my.add_where(where)
+                # else:
+                #     raise SearchException('Single argument filter is no longer supported. Try to use 2 or 3 arguments.')
 
             elif len(filter) == 2:
                 name, value = filter
