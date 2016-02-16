@@ -20,11 +20,10 @@ from pyasm.web import  DivWdg, HtmlElement, WebContainer
 class IconWdg(DivWdg):
 
     icons = {
-    # 16x16 icons                    
+    # 16x16 icons
     'ADD'                  : "add.png",
     'ADD_GRAY'             : "add_GRAY.png",
     'ADVANCED'             : "/context/icons/common/advanced.png",
-    'ALL_OK'               : "/context/icons/custom/allok_small.png",
     'APPLICATION_TILE_VERTICAL' : "application_tile_vertical.png",
     'APP_TILE_VERTICAL'    : "application_tile_vertical.png",
     'APP_VIEW_TILE'        : "application_view_tile.png",
@@ -35,18 +34,14 @@ class IconWdg(DivWdg):
     'ARROW_RIGHT'          : "/context/icons/common/right-arrow.png",
     'ARROW_UP'             : "/context/icons/common/up-arrow.png",
     'ARROW_UP_GREEN'       : "arrow_up.png",
-    'ARROW_UP_SOURCE'      : "/context/icons/custom/arrow_up_source.png", # MTM DID THIS. KAE SURE TO CARRY THIS FILE OVER ON UPDATE
-    'ARROW_UP_EQUIPMENT'   : "/context/icons/custom/arrow_up_equipment.png", # MTM DID THIS. KAE SURE TO CARRY THIS FILE OVER ON UPDATE
     'ARROW_DOWN'           : "/context/icons/common/down-arrow.png",
     'ARROW_OUT'            : "arrow_out.png",
     'ARROW_OUT_GRAY'       : "arrow_out_GRAY.png",
-    'ARROW_OUT_SOURCE'     : "/context/icons/custom/arrow_out_source.png", # MTM DID THIS. KAE SURE TO CARRY THIS FILE OVER ON UPDATE
-    'ARROW_OUT_EQUIPMENT'  : "/context/icons/custom/arrow_out_equipment.png", # MTM DID THIS. KAE SURE TO CARRY THIS FILE OVER ON UPDATE
     'ARROW_MORE_INFO'      : "/context/icons/custom/triangle_down.png",
     'ASSIGN'               : "_spt_user_assign.png",
     'ARROW_SWITCH'         : "arrow_switch.png",
     'ATTACHMENT'           : "attach.png",
-    
+
     'CAMERA'               : "camera.png",
     'CALENDAR'             : "calendar.png",
 
@@ -72,7 +67,6 @@ class IconWdg(DivWdg):
     'CONTENTS'             : "application_view_list.png",
     'CREATE'               : "lightbulb_off.png",
     'CROSS'                : "/context/icons/common/BtnKill.gif",
-    'CROSS_BLACK'                : "/context/icons/common/BtnKill_Black.gif", # MTM added this one. be sure to pull across
     'CURRENT'              : "_spt_bullet_radio.png",
 
     'DATE'                 : "date.png",
@@ -94,7 +88,6 @@ class IconWdg(DivWdg):
     'DB_GEAR'              : "database_gear.png",
 
     "DOCUMENTATION"        : "/context/icons/16x16/documentation.png",
-    "DOLLAR"               : "/context/icons/custom/dollar.png", #MTM
 
     'DOT_RED'              : "/context/icons/common/dot_red.png",
     'DOT_YELLOW'           : "/context/icons/common/dot_yellow.png",
@@ -107,9 +100,7 @@ class IconWdg(DivWdg):
     'EDIT_SETTINGS'        : "cog_edit.png",
     'EMAIL'                : "email.png",
     'ERROR'                : "exclamation.png",
-    'EQUIPMENT_ADD'        : "/context/icons/custom/equipment_add.png", # MTM ADDED THIS - make sure you carry the png along when you upgrade
 
-    'FILE_ADD'             : "/context/icons/custom/file_add.png",
     'FILM'                 : "film.png",
     'FILM_SUBMIT'          : "film_go.png",
     'FLOAT'                : "/context/icons/oo_prev/stock_cell-align-top-16.png", # need to replace!
@@ -124,16 +115,12 @@ class IconWdg(DivWdg):
     'DETAILS'              : "page_white_text.png",
     'DIALOG_CLOSE'         : "/context/spt_js/mooDialog/css/dialog-close2.png",
 
-    'FLAME'                : "/context/icons/custom/flame.png",
-
     'GEAR'                 : "cog.png",
     'GOOD'                 : "accept.png",
-    'GRAY_BOMB'            : "/context/icons/custom/gray_bomb.png",
     'GREEN_LIGHT'          : "/context/icons/custom/green_light.png",
     'GROUP'                : "group.png",
     'GROUP_LINK'           : "group_link.png",
 
-    'HACKUP'                   : "/context/icons/custom/hackup.png", #MTM
     'HELP'                 : "help.png",
     'HELP_BUTTON'          : "/context/icons/custom/help_button.png",
     'HELP_MISSING'         : "/context/icons/32x32/help_01_32.png",
@@ -155,22 +142,18 @@ class IconWdg(DivWdg):
     'JUMP'                 : "door_in.png",
 
     'KILL'                 : "/context/icons/common/kill_button.png",
-    'KILL_BW'              : "/context/icons/custom/kill_bw.png", # MTMT ADDED THIS. MAKE SURE TO CARRY IT ALONG
     'LAYER'                : "_spt_page_white_stack_add.png",
     'LEFT'                 : "control_rewind.png",
     'LICENSE'              : "rosette.png",
-    'LICENSE2'             : "rosette_grey.png",
     'LOAD'                 : "folder.png",
     'LINK'                 : "link.png",
     'LOCK'                 : "lock.png",
 
     'MAIL'                 : "email.png",
-    'MINUS_BUTTON'         : "/context/icons/custom/MinusIcon.png", # MTM DID THIS. KAE SURE TO CARRY THIS FILE OVER ON UPDATE
     'MOVIE_VIEW'           : "/context/icons/common/view_movie.png",
 
     'NAV'                  : "/context/icons/oo_prev/stock_navigator_purple.png", # need to replace!
     'NEW'                  : "new.png",
-    'NORMAL_EDIT'           : "/context/icons/custom/normal_edit.png",
     'NOTE'                 : "note.png",
     'NOTE_ADD'             : "note_add.png",
     'NOTE_DELETE'          : "note_delete.png",
@@ -191,7 +174,6 @@ class IconWdg(DivWdg):
     'PLUGIN_ADD'           : "plugin_add.png",
     'PLUS'                 : "/context/icons/custom/tab_plus.png",
     'PLUS_ADD'             : "/context/icons/custom/plus_bw.png",
-    'PLUS_BUTTON'          : "/context/icons/custom/PlusIcon.png", # MTM DID THIS. KAE SURE TO CARRY THIS FILE OVER ON UPDATE
     'POPUP_ANCHOR'         : "/context/icons/custom/popup_anchor.png",
     'POPUP_WIN_CLOSE'      : "/context/icons/custom/popup_close.png",
     #'POPUP_WIN_CLOSE'      : "/context/icons/glyphs/test_close.png",
@@ -199,7 +181,6 @@ class IconWdg(DivWdg):
     'POPUP_WIN_REFRESH'    : "_spt_popup_window_refresh.png",
     'PREF'                 : "brick.png",
     'PRINTER'              : "printer.png",
-    'PRIORITY'             : "/context/icons/custom/priority.png", # MTM did this
     'PROCESS'              : "application_view_tile.png",
     'PROGRESS'             : "/context/icons/common/indicator_medium.gif",
     'PROJECT'              : "/context/icons/custom/two_windows.png",
@@ -209,17 +190,13 @@ class IconWdg(DivWdg):
     'PUBLISH'              : "/context/icons/custom/checkin_disk.png",
     'PUBLISH_LG'           : "_spt_disk_with_cog_lg.png",
     'PUBLISH_MULTI'        : "_spt_disk_multiple_with_cog.png",
- 
-    'QUICK_EDIT'           : "/context/icons/custom/quick_edit.png",
 
-    'RED_BOMB'            : "/context/icons/custom/red_bomb.png",
     'REDO'                 : "arrow_redo.png",
     'REF'                  : "/context/icons/common/reference.png",
     'REFRESH'              : "arrow_refresh.png",
     'REFRESH_GRAY'         : "arrow_refresh_GRAY.png",
     'REGISTER'             : "/context/icons/custom/register.png",
     'RENDER'               : "/context/icons/oo_prev/stock_flip-16.png",  # need to replace!
-    'REPORT_ERROR'         : "/context/icons/custom/report_error.png", # MTM ADDED THIS - make sure you carry the png along when you upgrade
     'RESIZE_CORNER'        : "/context/icons/custom/resize.png",
     'RESIZE_HORIZ'         :    "/context/icons/custom/resize_horiz.png",
     'RESIZE_VERTICAL'      : "/context/icons/custom/resize_vertical.png",
@@ -232,9 +209,6 @@ class IconWdg(DivWdg):
     'SANDBOX'              : "/context/icons/custom/sandbox_16.png",
     'SELECT'               : "cursor.png",
     'SET_PROJECT'          : "folder_go.png",
-    'SOURCE_ADD'           : "/context/icons/custom/source_add2.png", # MTM ADDDED THIS
-    'SOURCE_ADD_TAPE'      : "/context/icons/custom/source_add_tape.png",  #MTM ADDED THIS
-    'SOURCE_PORTAL'        : "/context/icons/custom/source_portal.png",
     'SPECIAL'              : "medal_gold_3.png",
     'STAR'                 : "star.png",
 
@@ -243,8 +217,6 @@ class IconWdg(DivWdg):
     'TABLE_ROW_INSERT'     : "table_row_insert.png",
 
     'TAG_ORANGE'           : "tag_orange.png",
-    'TEMPLATE'             : "/context/icons/custom/template.png", # MTM ADDED THIS - make sure you carry the png along when you upgrade
-    'TEMPLATE_DOWN'        : "/context/icons/custom/template_down.png", # MTM ADDED THIS - make sure you carry the png along when you upgrade
     'TEST'                 : "/context/icons/common/test.png",
     'TIME'                 : "time.png",
     'TIMELINE_MARKER'      : "timeline_marker.png",
@@ -257,14 +229,13 @@ class IconWdg(DivWdg):
     'TRASH'                : "basket_delete.png",
 
 
-    'UH_OH'                : "/context/icons/custom/uhoh_small.png",
     'UNDO'                 : "_spt_arrow_undo_yellow.png",
     'UNKNOWN'              : "/context/icons/oo_prev/stock_unknown-16.png",  # need to replace!
     'UPDATE'               : "_spt_database_update.png",
     'UPLOAD'               : "_spt_upload.png",
     'HANDOFF'              : "/context/icons/common/connect.png",
     'UPLOAD2'              : "/context/icons/common/arrow_divide.png",
-    
+
     'USER'                 : "user.png",
     'USER_ADD'             : "user_add.png",
     'USER_EDIT'            : "user_edit.png",
@@ -340,9 +311,9 @@ class IconWdg(DivWdg):
     'TASK_01'                 : '/context/icons/32x32/task_32_01.png',
     'USER_32'                 : '/context/icons/32x32/end_user_32.png',
     'WIDGET_CONFIG_01'        : '/context/icons/32x32/widget_config_32_01.png',
-    
+
     #black and white Icons
-    
+
     'BW_COMMENT'          : "/context/icons/common/bw_comment.png",
     'BW_CREDIT_CARD'      : "/context/icons/common/bw_credit_card.png",
     'BW_DOCUMENT'         : "/context/icons/common/bw_document.png",
@@ -350,7 +321,7 @@ class IconWdg(DivWdg):
     'BW_SHOPPING_BAG'     : "/context/icons/common/bw_shopping_bag.png",
     'BW_STORAGE'          : "/context/icons/common/bw_storage.png",
     'BW_DOCUMENTS'        : "/context/icons/common/bw_documents.png",
-    
+
     #new sidebar icons
     'ADVANCED_PROJ_SETUP' : "/context/icons/common/advanced_project_setup_01.png",
     'PROJECT_STARTUP'     : "/context/icons/common/project_startup_01.png",
@@ -382,8 +353,8 @@ class IconWdg(DivWdg):
     'G_HOME_BLACK'        : '/context/icons/glyphs/home_black.png',
 
 
-    
-      
+
+
 
 
     # -- Constants:previously here, that are not referenced in any python code ... only add them back in as needed!
@@ -458,7 +429,7 @@ class IconWdg(DivWdg):
             icon.set_attr("title", my.text)
         if my.right_margin:
             icon.add_style("margin-right: %s" % my.right_margin)
-       
+
         my.icon = icon
 
         inline = my.kwargs.get("inline")
@@ -466,9 +437,9 @@ class IconWdg(DivWdg):
             my.add_style("float: left")
         else:
             my.add_style("display: inline")
-        
 
-        
+
+
 
 
     def get_display(my):
@@ -502,7 +473,7 @@ class IconWdg(DivWdg):
 
 
 class IconButtonWdg(HtmlElement):
-    
+
     def __init__(my, name=None, icon=None, long=False, icon_pos="left", icon_styles='', opacity=None):
         my.text = name
         my.icon_path = icon
@@ -511,7 +482,7 @@ class IconButtonWdg(HtmlElement):
         super(IconButtonWdg,my).__init__("span")
         my.name = name
         my.icon_styles = icon_styles
-    
+
 
     def set_icon(my, icon):
         my.icon_path = icon
@@ -536,7 +507,7 @@ class IconButtonWdg(HtmlElement):
         # icon is optional
         if not my.icon_path:
             return
-        
+
         if not my.icon_path.startswith("/"):
             # icon_path = "/context/icons/oo/%s" % my.icon_path
             icon_path = "/context/icons/silk/%s" % my.icon_path
@@ -545,10 +516,10 @@ class IconButtonWdg(HtmlElement):
 
         icon = HtmlElement.img(icon_path)
         icon.set_attr("title", my.name)
-        icon.add_styles(my.icon_styles)   
+        icon.add_styles(my.icon_styles)
         if my.long:
             img_id = my.generate_unique_id(my.name)
-            icon.add_class("icon_out") 
+            icon.add_class("icon_out")
             my.add_event("onmouseover","wdg_opacity('%s','over');" % (img_id))
             my.add_event("onmouseout","wdg_opacity('%s','out');" % (img_id))
             icon.set_id(img_id)
@@ -560,7 +531,7 @@ class IconButtonWdg(HtmlElement):
             icon.add_style("vertical-align: top")
         else:
             icon.add_style("vertical-align: middle")
-       
+
         my.add(icon)
 
 
@@ -574,7 +545,7 @@ class IconButtonWdg(HtmlElement):
             # this is Mootools specific
             my.add_event('onclick', 'new Event(event).stop()')
             my.add_class("button")
-          
+
             if WebContainer.get_web().is_IE():
                 my.add_style("border-width: 0px 2px 2px 0px")
                 my.add_style("border-style: solid")
@@ -582,8 +553,8 @@ class IconButtonWdg(HtmlElement):
                 my.add_event("onmousedown", "button_down(this)")
                 my.add_event("onmouseup", "button_up(this)")
                 my.add_event("onmouseout", "button_up(this)")
-       
-            
+
+
 
 class IconSubmitWdg(IconButtonWdg):
     def __init__(my, name=None, icon=None, long=False, icon_pos="left", \
@@ -598,9 +569,9 @@ class IconSubmitWdg(IconButtonWdg):
         # for some reason, my.name gets reset to empty
         my.name = name
         my.submit_name = name
-        
+
         super(IconSubmitWdg,my).__init__(name,icon,long,icon_pos)
-    
+
     def init(my):
         from input_wdg import HiddenWdg
         if my.add_hidden:
@@ -615,7 +586,7 @@ class IconSubmitWdg(IconButtonWdg):
 
     def get_value(my):
         return my.hidden.get_value()
-    
+
 
 
 class IconRefreshWdg(IconSubmitWdg):
@@ -625,7 +596,7 @@ class IconRefreshWdg(IconSubmitWdg):
 
 
 class ProdIconButtonWdg(IconButtonWdg):
-    
+
     def __init__(my, name=None, icon=None, long=True, icon_pos="left", icon_styles=''):
         super(ProdIconButtonWdg,my).__init__(name, icon, long, icon_pos, icon_styles=icon_styles)
         #my.add_style("line-height: 14px")
@@ -633,7 +604,7 @@ class ProdIconButtonWdg(IconButtonWdg):
         my.add_style("padding: 3px 10px 3px 10px")
 
 class ProdIconSubmitWdg(IconSubmitWdg):
-    
+
     def __init__(my, name=None, icon=None, long=True, icon_pos="left"):
         super(ProdIconSubmitWdg,my).__init__(name, icon, long, icon_pos)
         my.add_style("line-height: 14px")
