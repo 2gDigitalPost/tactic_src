@@ -546,7 +546,6 @@ spt.drop.add_src_to_dst = function( src_el, dst_el )
 {
     // get all the source items
     var src_layout = src_el.getParent(".spt_layout");
-
     if (!src_layout) {
         log.warning("The source table is not the matching fast table layout.");
         return;

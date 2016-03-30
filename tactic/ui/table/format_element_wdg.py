@@ -618,7 +618,6 @@ class FormatElementWdg(SimpleTableElementWdg):
             td.add_attr("spt_input_type", "inline")
             td.add_style("text-align: center")
         
- 
 
 
 

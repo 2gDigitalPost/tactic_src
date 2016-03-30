@@ -923,7 +923,6 @@ class Task(SObject):
                 # for a task to be x days long, we need duration x-1.
                 end_date.add_days(duration-1)
 
-
             # output contexts could be duplicated from 2 different outout processes
             if mode == 'simple process':
                 output_contexts = [process_name]
@@ -1058,6 +1057,9 @@ class Milestone(SObject):
 
 
         return defaults
+
+
+
 
 
 

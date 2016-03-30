@@ -41,7 +41,7 @@ class ButtonElementWdg(BaseTableElementWdg):
         'order': 1,
     },
  
-   'icon': {
+    'icon': {
         'description': 'The icon to display for the button',
         'type': 'IconSelectWdg',
         'category': "Options",
